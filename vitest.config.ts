@@ -11,5 +11,12 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./vitest.setup.ts"],
     css: false,
+    // Two test files import the browser Supabase client at module load, and
+    // createBrowserClient throws without a URL/key. CI has no .env, so hand
+    // the tests obviously-fake values — no test may reach a real backend.
+    env: {
+      VITE_SUPABASE_URL: "http://localhost:54321",
+      VITE_SUPABASE_ANON_KEY: "test-anon-key",
+    },
   },
 });
