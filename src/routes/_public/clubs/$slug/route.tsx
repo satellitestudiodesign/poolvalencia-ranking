@@ -57,7 +57,10 @@ export const Route = createFileRoute("/_public/clubs/$slug")({
         description: `${club.name}: ${club.member_count} miembros, con rankings, resultados de partidas y torneos.`,
         path,
         origin,
-        image: club.logo_url,
+        // The logo as bytes over HTTP, not the data: URI in the column —
+        // publicMeta drops those, so this used to fall through to the default
+        // card on every club in the directory.
+        image: club.logo_url ? `/api/clubs/${club.slug}/logo` : null,
         fallback: "clubs",
       }),
       links: canonical(path, origin),

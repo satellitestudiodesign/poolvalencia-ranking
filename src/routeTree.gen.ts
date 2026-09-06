@@ -46,6 +46,7 @@ import { Route as PublicClubsSlugGamesRouteImport } from './routes/_public/clubs
 import { Route as PublicClubsSlugInfoRouteImport } from './routes/_public/clubs/$slug/info'
 import { Route as PublicClubsSlugPlayersRouteImport } from './routes/_public/clubs/$slug/players'
 import { Route as ApiClubsSlugLogoRouteImport } from './routes/api/clubs/$slug/logo'
+import { Route as ApiOgTournamentsTournamentIdDotpngRouteImport } from './routes/api/og/tournaments/$tournamentId[.]png'
 import { Route as AppAuthedClubSlugIndexRouteImport } from './routes/app/_authed/$clubSlug/index'
 import { Route as AppAuthedClubSlugChallengesRouteImport } from './routes/app/_authed/$clubSlug/challenges'
 import { Route as AppAuthedClubSlugClubRouteRouteImport } from './routes/app/_authed/$clubSlug/club/route'
@@ -53,6 +54,7 @@ import { Route as AppAuthedClubSlugNightRouteImport } from './routes/app/_authed
 import { Route as AppAuthedClubSlugTodayRouteImport } from './routes/app/_authed/$clubSlug/today'
 import { Route as AppAuthedClubSlugTvRouteImport } from './routes/app/_authed/$clubSlug/tv'
 import { Route as AppAuthedClubsNoneRouteImport } from './routes/app/_authed/clubs.none'
+import { Route as PublicClubsSlugGameGameIdRouteImport } from './routes/_public/clubs/$slug/game/$gameId'
 import { Route as AppAuthedClubSlugClubIndexRouteImport } from './routes/app/_authed/$clubSlug/club/index'
 import { Route as AppAuthedClubSlugClubMembersRouteImport } from './routes/app/_authed/$clubSlug/club/members'
 import { Route as AppAuthedClubSlugClubTablesRouteImport } from './routes/app/_authed/$clubSlug/club/tables'
@@ -267,6 +269,12 @@ const ApiClubsSlugLogoRoute = ApiClubsSlugLogoRouteImport.update({
   path: '/api/clubs/$slug/logo',
   getParentRoute: () => rootRouteImport,
 } as any)
+const ApiOgTournamentsTournamentIdDotpngRoute =
+  ApiOgTournamentsTournamentIdDotpngRouteImport.update({
+    id: '/api/og/tournaments/$tournamentId.png',
+    path: '/api/og/tournaments/$tournamentId.png',
+    getParentRoute: () => rootRouteImport,
+  } as any)
 const AppAuthedClubSlugIndexRoute = AppAuthedClubSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -304,6 +312,12 @@ const AppAuthedClubsNoneRoute = AppAuthedClubsNoneRouteImport.update({
   path: '/clubs/none',
   getParentRoute: () => AppAuthedRouteRoute,
 } as any)
+const PublicClubsSlugGameGameIdRoute =
+  PublicClubsSlugGameGameIdRouteImport.update({
+    id: '/game/$gameId',
+    path: '/game/$gameId',
+    getParentRoute: () => PublicClubsSlugRouteRoute,
+  } as any)
 const AppAuthedClubSlugClubIndexRoute =
   AppAuthedClubSlugClubIndexRouteImport.update({
     id: '/',
@@ -509,6 +523,7 @@ export interface FileRoutesByFullPath {
   '/clubs/$slug/info': typeof PublicClubsSlugInfoRoute
   '/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
+  '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
   '/app/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
   '/app/$clubSlug/today': typeof AppAuthedClubSlugTodayRoute
@@ -516,6 +531,7 @@ export interface FileRoutesByFullPath {
   '/app/clubs/none': typeof AppAuthedClubsNoneRoute
   '/clubs/$slug/': typeof PublicClubsSlugIndexRoute
   '/app/$clubSlug/': typeof AppAuthedClubSlugIndexRoute
+  '/clubs/$slug/game/$gameId': typeof PublicClubsSlugGameGameIdRoute
   '/app/$clubSlug/club/members': typeof AppAuthedClubSlugClubMembersRoute
   '/app/$clubSlug/club/tables': typeof AppAuthedClubSlugClubTablesRoute
   '/app/$clubSlug/drills/new': typeof AppAuthedClubSlugDrillsNewRoute
@@ -577,6 +593,7 @@ export interface FileRoutesByTo {
   '/clubs/$slug/info': typeof PublicClubsSlugInfoRoute
   '/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
+  '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
   '/app/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
   '/app/$clubSlug/today': typeof AppAuthedClubSlugTodayRoute
@@ -584,6 +601,7 @@ export interface FileRoutesByTo {
   '/app/clubs/none': typeof AppAuthedClubsNoneRoute
   '/clubs/$slug': typeof PublicClubsSlugIndexRoute
   '/app/$clubSlug': typeof AppAuthedClubSlugIndexRoute
+  '/clubs/$slug/game/$gameId': typeof PublicClubsSlugGameGameIdRoute
   '/app/$clubSlug/club/members': typeof AppAuthedClubSlugClubMembersRoute
   '/app/$clubSlug/club/tables': typeof AppAuthedClubSlugClubTablesRoute
   '/app/$clubSlug/drills/new': typeof AppAuthedClubSlugDrillsNewRoute
@@ -652,6 +670,7 @@ export interface FileRoutesById {
   '/_public/clubs/$slug/info': typeof PublicClubsSlugInfoRoute
   '/_public/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
+  '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
   '/app/_authed/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/_authed/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
   '/app/_authed/$clubSlug/today': typeof AppAuthedClubSlugTodayRoute
@@ -659,6 +678,7 @@ export interface FileRoutesById {
   '/app/_authed/clubs/none': typeof AppAuthedClubsNoneRoute
   '/_public/clubs/$slug/': typeof PublicClubsSlugIndexRoute
   '/app/_authed/$clubSlug/': typeof AppAuthedClubSlugIndexRoute
+  '/_public/clubs/$slug/game/$gameId': typeof PublicClubsSlugGameGameIdRoute
   '/app/_authed/$clubSlug/club/members': typeof AppAuthedClubSlugClubMembersRoute
   '/app/_authed/$clubSlug/club/tables': typeof AppAuthedClubSlugClubTablesRoute
   '/app/_authed/$clubSlug/drills/new': typeof AppAuthedClubSlugDrillsNewRoute
@@ -726,6 +746,7 @@ export interface FileRouteTypes {
     | '/clubs/$slug/info'
     | '/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
+    | '/api/og/tournaments/$tournamentId.png'
     | '/app/$clubSlug/challenges'
     | '/app/$clubSlug/night'
     | '/app/$clubSlug/today'
@@ -733,6 +754,7 @@ export interface FileRouteTypes {
     | '/app/clubs/none'
     | '/clubs/$slug/'
     | '/app/$clubSlug/'
+    | '/clubs/$slug/game/$gameId'
     | '/app/$clubSlug/club/members'
     | '/app/$clubSlug/club/tables'
     | '/app/$clubSlug/drills/new'
@@ -794,6 +816,7 @@ export interface FileRouteTypes {
     | '/clubs/$slug/info'
     | '/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
+    | '/api/og/tournaments/$tournamentId.png'
     | '/app/$clubSlug/challenges'
     | '/app/$clubSlug/night'
     | '/app/$clubSlug/today'
@@ -801,6 +824,7 @@ export interface FileRouteTypes {
     | '/app/clubs/none'
     | '/clubs/$slug'
     | '/app/$clubSlug'
+    | '/clubs/$slug/game/$gameId'
     | '/app/$clubSlug/club/members'
     | '/app/$clubSlug/club/tables'
     | '/app/$clubSlug/drills/new'
@@ -868,6 +892,7 @@ export interface FileRouteTypes {
     | '/_public/clubs/$slug/info'
     | '/_public/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
+    | '/api/og/tournaments/$tournamentId.png'
     | '/app/_authed/$clubSlug/challenges'
     | '/app/_authed/$clubSlug/night'
     | '/app/_authed/$clubSlug/today'
@@ -875,6 +900,7 @@ export interface FileRouteTypes {
     | '/app/_authed/clubs/none'
     | '/_public/clubs/$slug/'
     | '/app/_authed/$clubSlug/'
+    | '/_public/clubs/$slug/game/$gameId'
     | '/app/_authed/$clubSlug/club/members'
     | '/app/_authed/$clubSlug/club/tables'
     | '/app/_authed/$clubSlug/drills/new'
@@ -912,6 +938,7 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   ApiClubsSlugLogoRoute: typeof ApiClubsSlugLogoRoute
+  ApiOgTournamentsTournamentIdDotpngRoute: typeof ApiOgTournamentsTournamentIdDotpngRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1175,6 +1202,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiClubsSlugLogoRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/api/og/tournaments/$tournamentId.png': {
+      id: '/api/og/tournaments/$tournamentId.png'
+      path: '/api/og/tournaments/$tournamentId.png'
+      fullPath: '/api/og/tournaments/$tournamentId.png'
+      preLoaderRoute: typeof ApiOgTournamentsTournamentIdDotpngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/app/_authed/$clubSlug/': {
       id: '/app/_authed/$clubSlug/'
       path: '/'
@@ -1223,6 +1257,13 @@ declare module '@tanstack/react-router' {
       fullPath: '/app/clubs/none'
       preLoaderRoute: typeof AppAuthedClubsNoneRouteImport
       parentRoute: typeof AppAuthedRouteRoute
+    }
+    '/_public/clubs/$slug/game/$gameId': {
+      id: '/_public/clubs/$slug/game/$gameId'
+      path: '/game/$gameId'
+      fullPath: '/clubs/$slug/game/$gameId'
+      preLoaderRoute: typeof PublicClubsSlugGameGameIdRouteImport
+      parentRoute: typeof PublicClubsSlugRouteRoute
     }
     '/app/_authed/$clubSlug/club/': {
       id: '/app/_authed/$clubSlug/club/'
@@ -1428,6 +1469,7 @@ interface PublicClubsSlugRouteRouteChildren {
   PublicClubsSlugInfoRoute: typeof PublicClubsSlugInfoRoute
   PublicClubsSlugPlayersRoute: typeof PublicClubsSlugPlayersRoute
   PublicClubsSlugIndexRoute: typeof PublicClubsSlugIndexRoute
+  PublicClubsSlugGameGameIdRoute: typeof PublicClubsSlugGameGameIdRoute
 }
 
 const PublicClubsSlugRouteRouteChildren: PublicClubsSlugRouteRouteChildren = {
@@ -1435,6 +1477,7 @@ const PublicClubsSlugRouteRouteChildren: PublicClubsSlugRouteRouteChildren = {
   PublicClubsSlugInfoRoute: PublicClubsSlugInfoRoute,
   PublicClubsSlugPlayersRoute: PublicClubsSlugPlayersRoute,
   PublicClubsSlugIndexRoute: PublicClubsSlugIndexRoute,
+  PublicClubsSlugGameGameIdRoute: PublicClubsSlugGameGameIdRoute,
 }
 
 const PublicClubsSlugRouteRouteWithChildren =
@@ -1638,6 +1681,8 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   ApiClubsSlugLogoRoute: ApiClubsSlugLogoRoute,
+  ApiOgTournamentsTournamentIdDotpngRoute:
+    ApiOgTournamentsTournamentIdDotpngRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
