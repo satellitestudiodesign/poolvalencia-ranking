@@ -64,7 +64,7 @@ export type LegalDocId = "privacy" | "terms" | "aviso-legal";
 const UPDATED = "2026-09-04";
 
 const providerList = SUBPROCESSORS.map(
-  (p) => `${p.name} — ${p.role} (${p.region})`,
+  (p) => `${p.name} - ${p.role} (${p.region})`,
 ).join(" · ");
 
 const privacyEs: LegalDoc = {
@@ -357,7 +357,7 @@ const termsEs: LegalDoc = {
       heading: "5. Beta y gratuidad",
       body: [
         "El servicio está en beta abierta. Los jugadores no pagan nunca; para los clubes es gratuito durante la beta.",
-        "Los clubes que participan en la beta conservan el servicio gratis de forma permanente, también cuando exista una cuota para nuevos clubes.",
+        "Más adelante habrá una cuota por club. Lo avisaremos con antelación razonable y ningún club empieza a pagar sin haberlo aceptado: quien no acepte pasa a modo lectura y puede exportar sus datos.",
         "Si en el futuro un club con cuota deja de pagar, sus datos no se borran: el club pasa a modo lectura y su página pública sigue en pie.",
       ],
     },
@@ -435,7 +435,7 @@ const termsEn: LegalDoc = {
       heading: "5. Beta and pricing",
       body: [
         "The service is in open beta. Players never pay; for clubs it is free during the beta.",
-        "Clubs taking part in the beta keep the service free permanently, including after a fee exists for new clubs.",
+        "Later there will be a fee per club. We will give reasonable advance notice and no club starts paying without agreeing to it: a club that does not agree becomes read-only and can export its data.",
         "If a paying club later stops paying, its data is not deleted: the club becomes read-only and its public page stays up.",
       ],
     },
@@ -513,7 +513,7 @@ const termsFr: LegalDoc = {
       heading: "5. Bêta et gratuité",
       body: [
         "Le service est en bêta ouverte. Les joueurs ne paient jamais ; pour les clubs, c'est gratuit pendant la bêta.",
-        "Les clubs qui participent à la bêta conservent le service gratuitement de façon permanente, y compris après l'apparition d'un tarif pour les nouveaux clubs.",
+        "Plus tard, il y aura un tarif par club. Nous préviendrons dans un délai raisonnable et aucun club ne commence à payer sans l'avoir accepté : un club qui refuse passe en lecture seule et peut exporter ses données.",
         "Si un club payant cesse un jour de payer, ses données ne sont pas supprimées : le club passe en lecture seule et sa page publique reste en ligne.",
       ],
     },

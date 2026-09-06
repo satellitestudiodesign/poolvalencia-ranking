@@ -5,17 +5,17 @@ import { publicMeta, canonical } from "@/libs/algorithms/publicMeta";
 /**
  * The price, while there isn't one.
  *
- * A club owner looks for this page before he looks at the product, and its
- * absence reads as "there is a price and they won't say it". The answer today is
- * free, and the sentence that matters is the grandfathering: the clubs in the
- * beta keep it free once there is a fee.
+ * A club owner looks for this page before looking at the product, and its
+ * absence reads as "there is a price and they won't say it". The answer today
+ * is free for the beta, and the page says plainly that a per-club fee comes
+ * afterwards, announced before it starts. No free-forever promise.
  */
 export const Route = createFileRoute("/_public/pricing")({
   head: ({ match }) => ({
     meta: publicMeta({
       title: "Precios · PoolClubs",
       description:
-        "Gratis durante la beta, y gratis para siempre para los clubes que la prueben. Los jugadores nunca pagan.",
+        "Gratis para los clubes durante la beta. Después, una cuota por club y mes, avisada con antelación. Los jugadores no pagan nunca.",
       path: "/pricing",
       origin: match.context.origin,
       fallback: "default",

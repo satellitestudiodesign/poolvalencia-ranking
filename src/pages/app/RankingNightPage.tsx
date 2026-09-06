@@ -43,7 +43,7 @@ import { DISCIPLINES, type ClubTable, type Player } from "@/types";
  */
 export default function RankingNightPage() {
   const { t, locale } = useT();
-  const { player, isClubAdmin, activeClub } = useAuth();
+  const { player, isClubAdmin, isMember, activeClub } = useAuth();
   const { data: players, isLoading } = usePlayers();
   const { data: tables } = useClubTables();
   const { data: live } = useLiveMatches();
@@ -85,7 +85,10 @@ export default function RankingNightPage() {
   const matchOn = (tableId: number) =>
     (live ?? []).find((m) => m.table_id === tableId);
   const hereIds = new Set(here.map((p) => p.id));
-  const canCheckOthers = isClubAdmin || player?.is_device === true;
+  /** Anybody in the club, which is what the guard in sql/schema.sql now allows:
+   *  the person who says "he's here, he's just at the bar" is whoever saw him
+   *  come in, and it was never going to be the owner every time. */
+  const canCheckOthers = isMember;
 
   const seats = seatsNeeded(setup);
   // Who could play whom, and on what. Shared with each table's own screen and
@@ -317,8 +320,8 @@ export default function RankingNightPage() {
           in and never look at it again. Faces rather than a list, because it is
           read by somebody with a cue bag on their shoulder and the point is
           recognising yourself rather than reading a name.
-          On a phone only your own tap does anything — checking somebody else in
-          is refused by the guard in sql/schema.sql. */}
+          Anybody in the club may tap anybody's face, either way: the guard in
+          sql/schema.sql asks for membership and nothing more. */}
       <section className="space-y-3">
         <div className="flex flex-wrap items-baseline justify-between gap-x-3 gap-y-2 px-1">
           <h2 className="text-h4 font-semibold text-ink">
@@ -432,12 +435,6 @@ export default function RankingNightPage() {
               );
             })}
           </ul>
-        )}
-
-        {!canCheckOthers && (
-          <p className="px-1 text-caption text-ink-faint">
-            {t("tonight.onlyYou")}
-          </p>
         )}
       </section>
 

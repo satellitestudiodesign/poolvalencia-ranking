@@ -854,6 +854,33 @@ END $$;
 ALTER FUNCTION "public"."leave_club"("p_club_id" integer) OWNER TO "postgres";
 
 
+CREATE OR REPLACE FUNCTION "public"."live_match_checks_in_seats"() RETURNS "trigger"
+    LANGUAGE "plpgsql" SECURITY DEFINER
+    SET "search_path" TO 'public'
+    AS $$
+BEGIN
+  -- Racking up is the strongest check-in there is, and it must not be on loan
+  -- from this row. whoIsHere in libs/algorithms/night.ts counts a seat as being
+  -- present, and the row is deleted three ways: filed by finish_live_match,
+  -- abandoned from the bar, and cleared by anybody at all three hours after it
+  -- went quiet. A night that started with four people playing and nobody
+  -- tapping "I'm here" emptied its own board on the first result.
+  --
+  -- Only ever set, never cleared, and never over an existing check-in: leaving
+  -- is somebody's decision -- their own, or another member's on the board --
+  -- and overwriting would restart the wait clock the queue is sorted on, so
+  -- starting a match would send that player to the back of it.
+  UPDATE players SET present_since = now()
+  WHERE id IN (NEW.player_1_id, NEW.player_2_id, NEW.player_1b_id, NEW.player_2b_id)
+    AND present_since IS NULL;
+
+  RETURN NULL;
+END $$;
+
+
+ALTER FUNCTION "public"."live_match_checks_in_seats"() OWNER TO "postgres";
+
+
 CREATE OR REPLACE FUNCTION "public"."live_match_guard"() RETURNS "trigger"
     LANGUAGE "plpgsql"
     SET "search_path" TO 'public'
@@ -1092,12 +1119,20 @@ BEGIN
     RAISE EXCEPTION 'only the club owner may designate a device account';
   END IF;
 
-  IF (NEW.present_since, NEW.queued_table_id, NEW.queued_at)
-     IS DISTINCT FROM (OLD.present_since, OLD.queued_table_id, OLD.queued_at)
+  -- Anybody in the club may say who is here, either way round. A ranking night
+  -- is a room of people telling each other who turned up, and making that the
+  -- owner's job left the board wrong every night the owner was mid-rack.
+  IF NEW.present_since IS DISTINCT FROM OLD.present_since
+     AND NOT is_club_member(OLD.club_id) THEN
+    RAISE EXCEPTION 'only the club can check somebody in';
+  END IF;
+
+  IF (NEW.queued_table_id, NEW.queued_at)
+     IS DISTINCT FROM (OLD.queued_table_id, OLD.queued_at)
      AND NOT (is_own_player(NEW.id::integer)
               OR is_club_admin(OLD.club_id)
               OR is_club_device(OLD.club_id)) THEN
-    RAISE EXCEPTION 'you can only check yourself in';
+    RAISE EXCEPTION 'you can only queue yourself';
   END IF;
 
   RETURN NEW;
@@ -2267,6 +2302,10 @@ CREATE OR REPLACE TRIGGER "clubs_timezone_check" BEFORE INSERT OR UPDATE OF "tim
 
 
 
+CREATE OR REPLACE TRIGGER "live_matches_check_in_seats" AFTER INSERT ON "public"."live_matches" FOR EACH ROW EXECUTE FUNCTION "public"."live_match_checks_in_seats"();
+
+
+
 CREATE OR REPLACE TRIGGER "live_matches_guard" BEFORE INSERT OR UPDATE ON "public"."live_matches" FOR EACH ROW EXECUTE FUNCTION "public"."live_match_guard"();
 
 
@@ -3366,6 +3405,12 @@ GRANT ALL ON FUNCTION "public"."join_request_admin_contact"("p_club_id" integer)
 REVOKE ALL ON FUNCTION "public"."leave_club"("p_club_id" integer) FROM PUBLIC;
 GRANT ALL ON FUNCTION "public"."leave_club"("p_club_id" integer) TO "authenticated";
 GRANT ALL ON FUNCTION "public"."leave_club"("p_club_id" integer) TO "service_role";
+
+
+
+GRANT ALL ON FUNCTION "public"."live_match_checks_in_seats"() TO "anon";
+GRANT ALL ON FUNCTION "public"."live_match_checks_in_seats"() TO "authenticated";
+GRANT ALL ON FUNCTION "public"."live_match_checks_in_seats"() TO "service_role";
 
 
 

@@ -2,12 +2,14 @@ import { describe, expect, it } from "vitest";
 import {
   DEFAULT_SETUP,
   balanceDoubles,
+  byWait,
   clampRace,
   decodeSetup,
   encodeSetup,
   pairKey,
   seatsNeeded,
   suggestGroups,
+  waitingSince,
 } from "./today";
 
 describe("encodeSetup / decodeSetup", () => {
@@ -49,6 +51,64 @@ describe("seatsNeeded", () => {
   it("needs four names before a doubles suggestion is one", () => {
     expect(seatsNeeded(DEFAULT_SETUP)).toBe(2);
     expect(seatsNeeded({ ...DEFAULT_SETUP, mode: "doubles" })).toBe(4);
+  });
+});
+
+describe("waitingSince / byWait — the queue's order", () => {
+  const at = (iso: string) => Date.parse(iso);
+  const arrived = (id: number, iso: string | null) => ({
+    id,
+    present_since: iso,
+  });
+  const order = (
+    players: ReturnType<typeof arrived>[],
+    last: [number, string][],
+  ) =>
+    [...players]
+      .sort(byWait(new Map(last.map(([id, iso]) => [id, at(iso)]))))
+      .map((p) => p.id);
+
+  it("orders by how long somebody has waited, not by how many games they have had", () => {
+    // Ana arrived first but played until half past; Bea arrived later and has
+    // not played. Bea has been waiting the longest and the table is hers.
+    const ana = arrived(1, "2026-09-06T18:00:00Z");
+    const bea = arrived(2, "2026-09-06T18:20:00Z");
+    expect(order([ana, bea], [[1, "2026-09-06T18:30:00Z"]])).toEqual([2, 1]);
+  });
+
+  it("treats somebody who has not played as having waited since they arrived", () => {
+    const ana = arrived(1, "2026-09-06T18:00:00Z");
+    const bea = arrived(2, "2026-09-06T18:20:00Z");
+    expect(order([bea, ana], [])).toEqual([1, 2]);
+  });
+
+  it("sorts a browser check-in against a Postgres timestamp", () => {
+    // present_since is written by the browser as `...Z`; played_at comes back
+    // with a `+00:00`. Compared as strings these two sort the wrong way round.
+    expect(
+      waitingSince(arrived(1, "2026-09-06T18:00:00.000Z"), undefined),
+    ).toBe(waitingSince(arrived(1, "2026-09-06T18:00:00+00:00"), undefined));
+  });
+
+  it("takes the later of arriving and finishing, not whichever was written last", () => {
+    // Checked in at six, played at eight: the wait started at eight.
+    const ana = arrived(1, "2026-09-06T18:00:00Z");
+    expect(waitingSince(ana, at("2026-09-06T20:00:00Z"))).toBe(
+      at("2026-09-06T20:00:00Z"),
+    );
+    // And a stale game from before the check-in does not drag them backwards.
+    const bea = arrived(2, "2026-09-06T20:00:00Z");
+    expect(waitingSince(bea, at("2026-09-06T18:00:00Z"))).toBe(
+      at("2026-09-06T20:00:00Z"),
+    );
+  });
+
+  it("puts somebody with no date at all at the head rather than dropping them", () => {
+    // A seat at a live table counts as being here with no present_since of its
+    // own — see whoIsHere. Such a player must still be sortable.
+    expect(
+      order([arrived(1, "2026-09-06T18:00:00Z"), arrived(2, null)], []),
+    ).toEqual([2, 1]);
   });
 });
 

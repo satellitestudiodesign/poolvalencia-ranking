@@ -324,22 +324,32 @@ export function ClubCard({ club }: { club: PublicClubCard }) {
       params={{ slug: club.slug }}
       className={cardClasses({ className: "lift group block overflow-hidden" })}
     >
-      {/* The venue if there is one, and a plain raised surface if not. The
-          fallback used to be the club's colour at full strength; on one accent
-          that would be a yellow strip on every photo-less club, in the exact
-          colour this app reserves for "act". */}
+      {/* The venue if there is one, and a drawn pool hall if not.
+
+          The fallback was the club's colour at full strength once; on one
+          accent that would be a yellow strip on every photo-less club, in the
+          exact colour this app reserves for "act". Bare felt-raised replaced
+          it and was worse in a different way: a flat rectangle where every
+          neighbouring card has a photograph reads as an image that failed to
+          load, not as a club that has not uploaded one.
+
+          One file for every such club and both themes. It is flat vector art,
+          so it cannot be mistaken for somebody's actual room, and it is dimmed
+          per theme (see .venue-fallback) so a club that did upload a photo
+          always wins the grid. */}
       <div className="relative h-36 overflow-hidden bg-felt-raised">
-        {cover && (
-          <img
-            src={cover.url}
-            // Decorative: the club's name is the heading right below it, and a
-            // description here would be read out before the name.
-            alt=""
-            aria-hidden
-            loading="lazy"
-            className="absolute inset-0 h-full w-full object-cover"
-          />
-        )}
+        <img
+          src={cover ? cover.url : "/art/venue-fallback.webp"}
+          // Decorative either way: the club's name is the heading right below
+          // it, and a description here would be read out before the name.
+          alt=""
+          aria-hidden
+          loading="lazy"
+          decoding="async"
+          className={`absolute inset-0 h-full w-full object-cover ${
+            cover ? "" : "venue-fallback"
+          }`}
+        />
         {isNew(club.created_at) && (
           <span className="flood absolute top-2.5 left-2.5 rounded-full px-2 py-0.5 font-mono text-caption font-semibold">
             {t("public.publicClubs.new")}
