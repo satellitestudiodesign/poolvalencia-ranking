@@ -59,8 +59,10 @@ describe("publicMeta image shape", () => {
     }) as Record<string, unknown>[];
 
     expect(find(tags, "twitter:card")).toBe("summary_large_image");
-    expect(find(tags, "og:image:width")).toBe("1200");
-    expect(find(tags, "og:image:height")).toBe("630");
+    // The generated cards are served at twice the nominal size — same ratio,
+    // twice the density. See CARD_SIZE in publicMeta.ts.
+    expect(find(tags, "og:image:width")).toBe("2400");
+    expect(find(tags, "og:image:height")).toBe("1260");
   });
 
   it("leaves a square logo as the small card, with no size claimed", () => {

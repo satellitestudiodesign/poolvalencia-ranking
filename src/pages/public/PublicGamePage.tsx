@@ -2,6 +2,7 @@ import { Link, getRouteApi } from "@tanstack/react-router";
 import { useSuspenseQuery } from "@tanstack/react-query";
 import { LuArrowLeft } from "react-icons/lu";
 import ShareButton from "@/components/social/ShareButton";
+import ShareCardButton from "@/components/social/ShareCardButton";
 import PlayerLink, { PlayerHighlight } from "@/components/players/PlayerLink";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { Fact } from "@/components/ui/Fact";
@@ -82,10 +83,19 @@ export default function PublicGamePage() {
           <CardHeader
             title={club.name}
             action={
-              <ShareButton
-                title={t("public.game.title")}
-                url={`${origin}/clubs/${club.slug}/game/${game.id}`}
-              />
+              <div className="flex items-center gap-1">
+                {/* Two different things to hand somebody: the page, and the
+                    picture of the result. */}
+                <ShareCardButton
+                  url={`/api/og/games/${game.id}.png`}
+                  fileName={`${club.slug}-${game.id.slice(0, 8)}.png`}
+                  title={t("public.game.title")}
+                />
+                <ShareButton
+                  title={t("public.game.title")}
+                  url={`${origin}/clubs/${club.slug}/game/${game.id}`}
+                />
+              </div>
             }
           />
           <div className="divide-y divide-hairline">

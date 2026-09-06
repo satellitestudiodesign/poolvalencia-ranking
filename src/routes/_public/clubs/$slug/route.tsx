@@ -57,10 +57,23 @@ export const Route = createFileRoute("/_public/clubs/$slug")({
         description: `${club.name}: ${club.member_count} miembros, con rankings, resultados de partidas y torneos.`,
         path,
         origin,
-        // The logo as bytes over HTTP, not the data: URI in the column —
-        // publicMeta drops those, so this used to fall through to the default
-        // card on every club in the directory.
-        image: club.logo_url ? `/api/clubs/${club.slug}/logo` : null,
+        // The club's own card — name, city, the faces of who plays there —
+        // drawn on demand by the route below. Never club.logo_url: that column
+        // holds a data: URI, which publicMeta drops and no crawler would fetch.
+        // The `v` is a cache-buster, not a parameter the route reads: Slack,
+        // WhatsApp and Facebook cache a preview image against its URL and may
+        // never re-fetch it, so a club that gained a member would keep the old
+        // face pile for as long as the link lives. Changing the count changes
+        // the URL, and the next scrape gets the new card.
+        //
+        // It does not catch everything. A club that swaps its cover photograph
+        // or its logo, with its roster unchanged, keeps the old card — the
+        // cover lives in the storage bucket and finding it here would cost a
+        // round trip on every render of this page for a token. If that starts
+        // to matter, the fix is a column on `clubs` that the photo mutations
+        // touch, not a listing in this loader.
+        image: `/api/og/clubs/${club.slug}?v=${club.member_count}-${club.logo_url ? 1 : 0}`,
+        wideImage: true,
         fallback: "clubs",
       }),
       links: canonical(path, origin),

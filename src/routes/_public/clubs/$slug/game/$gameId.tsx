@@ -48,7 +48,9 @@ export const Route = createFileRoute("/_public/clubs/$slug/game/$gameId")({
         description: `Resultado ${score} en ${club.name}. Marcador, jugadores y torneo.`,
         path,
         origin,
-        image: club.logo_url ? `/api/clubs/${club.slug}/logo` : null,
+        // The scoreline as a picture, drawn on demand.
+        image: `/api/og/games/${game.id}.png`,
+        wideImage: true,
         fallback: "clubs",
       }),
       links: canonical(path, origin),

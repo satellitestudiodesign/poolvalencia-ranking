@@ -46,6 +46,9 @@ import { Route as PublicClubsSlugGamesRouteImport } from './routes/_public/clubs
 import { Route as PublicClubsSlugInfoRouteImport } from './routes/_public/clubs/$slug/info'
 import { Route as PublicClubsSlugPlayersRouteImport } from './routes/_public/clubs/$slug/players'
 import { Route as ApiClubsSlugLogoRouteImport } from './routes/api/clubs/$slug/logo'
+import { Route as ApiOgClubsSlugRouteImport } from './routes/api/og/clubs/$slug'
+import { Route as ApiOgGamesGameIdDotpngRouteImport } from './routes/api/og/games/$gameId[.]png'
+import { Route as ApiOgPlayersSlugDotpngRouteImport } from './routes/api/og/players/$slug[.]png'
 import { Route as ApiOgTournamentsTournamentIdDotpngRouteImport } from './routes/api/og/tournaments/$tournamentId[.]png'
 import { Route as AppAuthedClubSlugIndexRouteImport } from './routes/app/_authed/$clubSlug/index'
 import { Route as AppAuthedClubSlugChallengesRouteImport } from './routes/app/_authed/$clubSlug/challenges'
@@ -267,6 +270,21 @@ const PublicClubsSlugPlayersRoute = PublicClubsSlugPlayersRouteImport.update({
 const ApiClubsSlugLogoRoute = ApiClubsSlugLogoRouteImport.update({
   id: '/api/clubs/$slug/logo',
   path: '/api/clubs/$slug/logo',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOgClubsSlugRoute = ApiOgClubsSlugRouteImport.update({
+  id: '/api/og/clubs/$slug',
+  path: '/api/og/clubs/$slug',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOgGamesGameIdDotpngRoute = ApiOgGamesGameIdDotpngRouteImport.update({
+  id: '/api/og/games/$gameId.png',
+  path: '/api/og/games/$gameId.png',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const ApiOgPlayersSlugDotpngRoute = ApiOgPlayersSlugDotpngRouteImport.update({
+  id: '/api/og/players/$slug.png',
+  path: '/api/og/players/$slug.png',
   getParentRoute: () => rootRouteImport,
 } as any)
 const ApiOgTournamentsTournamentIdDotpngRoute =
@@ -523,6 +541,9 @@ export interface FileRoutesByFullPath {
   '/clubs/$slug/info': typeof PublicClubsSlugInfoRoute
   '/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
+  '/api/og/clubs/$slug': typeof ApiOgClubsSlugRoute
+  '/api/og/games/$gameId.png': typeof ApiOgGamesGameIdDotpngRoute
+  '/api/og/players/$slug.png': typeof ApiOgPlayersSlugDotpngRoute
   '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
   '/app/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
@@ -593,6 +614,9 @@ export interface FileRoutesByTo {
   '/clubs/$slug/info': typeof PublicClubsSlugInfoRoute
   '/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
+  '/api/og/clubs/$slug': typeof ApiOgClubsSlugRoute
+  '/api/og/games/$gameId.png': typeof ApiOgGamesGameIdDotpngRoute
+  '/api/og/players/$slug.png': typeof ApiOgPlayersSlugDotpngRoute
   '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
   '/app/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
@@ -670,6 +694,9 @@ export interface FileRoutesById {
   '/_public/clubs/$slug/info': typeof PublicClubsSlugInfoRoute
   '/_public/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
+  '/api/og/clubs/$slug': typeof ApiOgClubsSlugRoute
+  '/api/og/games/$gameId.png': typeof ApiOgGamesGameIdDotpngRoute
+  '/api/og/players/$slug.png': typeof ApiOgPlayersSlugDotpngRoute
   '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
   '/app/_authed/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/_authed/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
@@ -746,6 +773,9 @@ export interface FileRouteTypes {
     | '/clubs/$slug/info'
     | '/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
+    | '/api/og/clubs/$slug'
+    | '/api/og/games/$gameId.png'
+    | '/api/og/players/$slug.png'
     | '/api/og/tournaments/$tournamentId.png'
     | '/app/$clubSlug/challenges'
     | '/app/$clubSlug/night'
@@ -816,6 +846,9 @@ export interface FileRouteTypes {
     | '/clubs/$slug/info'
     | '/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
+    | '/api/og/clubs/$slug'
+    | '/api/og/games/$gameId.png'
+    | '/api/og/players/$slug.png'
     | '/api/og/tournaments/$tournamentId.png'
     | '/app/$clubSlug/challenges'
     | '/app/$clubSlug/night'
@@ -892,6 +925,9 @@ export interface FileRouteTypes {
     | '/_public/clubs/$slug/info'
     | '/_public/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
+    | '/api/og/clubs/$slug'
+    | '/api/og/games/$gameId.png'
+    | '/api/og/players/$slug.png'
     | '/api/og/tournaments/$tournamentId.png'
     | '/app/_authed/$clubSlug/challenges'
     | '/app/_authed/$clubSlug/night'
@@ -938,6 +974,9 @@ export interface RootRouteChildren {
   SitemapDotxmlRoute: typeof SitemapDotxmlRoute
   AuthCallbackRoute: typeof AuthCallbackRoute
   ApiClubsSlugLogoRoute: typeof ApiClubsSlugLogoRoute
+  ApiOgClubsSlugRoute: typeof ApiOgClubsSlugRoute
+  ApiOgGamesGameIdDotpngRoute: typeof ApiOgGamesGameIdDotpngRoute
+  ApiOgPlayersSlugDotpngRoute: typeof ApiOgPlayersSlugDotpngRoute
   ApiOgTournamentsTournamentIdDotpngRoute: typeof ApiOgTournamentsTournamentIdDotpngRoute
 }
 
@@ -1200,6 +1239,27 @@ declare module '@tanstack/react-router' {
       path: '/api/clubs/$slug/logo'
       fullPath: '/api/clubs/$slug/logo'
       preLoaderRoute: typeof ApiClubsSlugLogoRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/og/clubs/$slug': {
+      id: '/api/og/clubs/$slug'
+      path: '/api/og/clubs/$slug'
+      fullPath: '/api/og/clubs/$slug'
+      preLoaderRoute: typeof ApiOgClubsSlugRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/og/games/$gameId.png': {
+      id: '/api/og/games/$gameId.png'
+      path: '/api/og/games/$gameId.png'
+      fullPath: '/api/og/games/$gameId.png'
+      preLoaderRoute: typeof ApiOgGamesGameIdDotpngRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/api/og/players/$slug.png': {
+      id: '/api/og/players/$slug.png'
+      path: '/api/og/players/$slug.png'
+      fullPath: '/api/og/players/$slug.png'
+      preLoaderRoute: typeof ApiOgPlayersSlugDotpngRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/api/og/tournaments/$tournamentId.png': {
@@ -1681,6 +1741,9 @@ const rootRouteChildren: RootRouteChildren = {
   SitemapDotxmlRoute: SitemapDotxmlRoute,
   AuthCallbackRoute: AuthCallbackRoute,
   ApiClubsSlugLogoRoute: ApiClubsSlugLogoRoute,
+  ApiOgClubsSlugRoute: ApiOgClubsSlugRoute,
+  ApiOgGamesGameIdDotpngRoute: ApiOgGamesGameIdDotpngRoute,
+  ApiOgPlayersSlugDotpngRoute: ApiOgPlayersSlugDotpngRoute,
   ApiOgTournamentsTournamentIdDotpngRoute:
     ApiOgTournamentsTournamentIdDotpngRoute,
 }

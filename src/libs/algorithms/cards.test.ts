@@ -1,11 +1,14 @@
 import { describe, expect, it } from "vitest";
 import {
+  clubCardSpec,
   fitText,
+  gameCardSpec,
+  podiumIds,
   podiumSteps,
   resultCardSpec,
   wrapText,
   type Measure,
-} from "./resultCard";
+} from "./cards";
 
 /** One character, one unit — the whole point of taking a measure function. */
 const mono: Measure = (text) => text.length;
@@ -36,6 +39,22 @@ describe("podiumSteps", () => {
       nameOf,
     );
     expect(steps).toHaveLength(4);
+  });
+});
+
+/** The card draws one avatar per step by index, so these two must stay in
+ *  lockstep — a mismatch would put the runner-up's face on the winner. */
+describe("podiumIds", () => {
+  it("lines up with podiumSteps, one for one", () => {
+    const places = { first: 7, second: 2, third: [9, 4] };
+    const ids = podiumIds(places);
+    const steps = podiumSteps(places, (id) => `Player ${id}`);
+
+    expect(ids).toEqual([7, 2, 9, 4]);
+    expect(steps.map((step) => step.name)).toEqual(
+      ids.map((id) => `Player ${id}`),
+    );
+    expect(steps.map((step) => step.rank)).toEqual([1, 2, 3, 3]);
   });
 });
 
@@ -71,16 +90,10 @@ describe("wrapText", () => {
 describe("resultCardSpec", () => {
   const spec = resultCardSpec({
     club: "Paula's Pool",
-    clubSlug: "paulas-pool",
     title: "Copa de Otoño",
     subtitle: "14 September 2026",
     places: { first: 1, second: 2, third: [] },
     nameOf,
-    origin: "https://poolclubs.app",
-  });
-
-  it("shows the club's public page without a scheme", () => {
-    expect(spec.url).toBe("poolclubs.app/clubs/paulas-pool");
   });
 
   it("names the file after the club and the tournament", () => {
@@ -90,13 +103,55 @@ describe("resultCardSpec", () => {
   it("carries an undated tournament as an empty subtitle, not null", () => {
     const undated = resultCardSpec({
       club: "Paula's Pool",
-      clubSlug: "paulas-pool",
       title: "Copa",
       subtitle: null,
       places: { first: 1, second: null, third: [] },
       nameOf,
-      origin: "https://poolclubs.app",
     });
     expect(undated.subtitle).toBe("");
+  });
+});
+
+describe("clubCardSpec", () => {
+  it("names the file after the club, and carries an unplaced club as empty", () => {
+    const spec = clubCardSpec({
+      name: "Club de Billar Paula",
+      place: null,
+      stat: "21 jugadores",
+    });
+
+    expect(spec.fileName).toBe("club-de-billar-paula.png");
+    expect(spec.subtitle).toBe("");
+  });
+});
+
+describe("gameCardSpec", () => {
+  const side = (name: string, score: number, won: boolean) => ({
+    names: [name],
+    score,
+    won,
+  });
+
+  it("names the file after who played, not after a uuid", () => {
+    const spec = gameCardSpec({
+      club: "Paula's Pool",
+      subtitle: "Bola 9 · Individual",
+      sides: [side("Ana Fernández", 5, true), side("Luis Martín", 3, false)],
+    });
+
+    expect(spec.fileName).toBe("ana-fernandez-vs-luis-martin.png");
+  });
+
+  it("survives a side whose player is not on the roster", () => {
+    const spec = gameCardSpec({
+      club: "Paula's Pool",
+      subtitle: "",
+      sides: [
+        { names: [], score: 5, won: true },
+        side("Luis Martín", 3, false),
+      ],
+    });
+
+    expect(spec.fileName).toBe("x-vs-luis-martin.png");
   });
 });

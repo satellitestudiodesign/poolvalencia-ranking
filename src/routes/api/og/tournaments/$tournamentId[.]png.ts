@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getSupabaseServer } from "@/libs/supabase/server";
 import { resolveBracket, tournamentPodium } from "@/libs/algorithms/bracket";
 import { eventDates } from "@/libs/algorithms/eventDates";
-import { resultCardSpec } from "@/libs/algorithms/resultCard";
+import { podiumIds, resultCardSpec } from "@/libs/algorithms/cards";
 import { PERSON_COLS, PLAYER_COLS } from "@/queries/public/shared";
 import type { TournamentMatch } from "@/types";
 
@@ -30,6 +30,13 @@ const LOCALE = "es-ES";
  * previews the wrong picture is a disappointment, a link that previews a broken
  * image is a bug.
  */
+/** Wide is the link preview's 1.91:1; square is what a phone shares into
+ *  WhatsApp and Instagram. One renderer, asked for either — which is what lets
+ *  the share button be a fetch rather than a second implementation in the
+ *  browser. */
+const sizeOf = (url: string): "square" | "wide" =>
+  new URL(url).searchParams.get("size") === "square" ? "square" : "wide";
+
 export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
   server: {
     handlers: {
@@ -55,7 +62,7 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
             .from("tournaments")
             .select(
               `id, name, format, starts_on, ends_on, status,
-                 club:clubs!inner(name, slug, logo_url, theme_color, is_public),
+                 club:clubs!inner(name, slug, logo_url, is_public),
                  tournament_players(player_id),
                  tournament_matches(*)`,
             )
@@ -78,18 +85,16 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
           // less than the default one.
           if (places.first === null) return fallback();
 
-          const ids = [places.first, places.second, ...places.third].filter(
-            (playerId): playerId is number => playerId !== null,
-          );
+          const ids = podiumIds(places);
           const { data: roster } = await supabase
             .from("players")
             .select(`${PLAYER_COLS}, person:people(${PERSON_COLS})`)
             .in("id", ids);
 
-          const names = new Map(
+          const people = new Map(
             (roster ?? []).map((row) => [
               row.id,
-              (row.person as { name?: string } | null)?.name ?? "—",
+              row.person as { name?: string; avatar_url?: string } | null,
             ]),
           );
 
@@ -102,7 +107,6 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
           const png = await renderResultCardPng(
             resultCardSpec({
               club: club.name,
-              clubSlug: club.slug,
               title: tournament.name,
               subtitle: eventDates(
                 tournament.starts_on,
@@ -110,13 +114,14 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
                 LOCALE,
               ),
               places,
-              nameOf: (playerId) => names.get(playerId) ?? "—",
-              origin,
+              nameOf: (playerId) => people.get(playerId)?.name ?? "—",
             }),
             {
-              color: club.theme_color,
               logoUrl: club.logo_url,
               markUrl: `${origin}/ball.png`,
+              size: sizeOf(request.url),
+              // In podium order, which is what podiumIds is for.
+              avatarUrls: ids.map((id) => people.get(id)?.avatar_url),
             },
           );
 

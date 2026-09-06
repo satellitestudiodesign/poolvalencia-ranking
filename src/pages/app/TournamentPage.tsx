@@ -34,7 +34,7 @@ import LeagueTable from "@/components/tournaments/LeagueTable";
 import MatchCard from "@/components/games/MatchCard";
 import MatchList from "@/components/games/MatchList";
 import TournamentPodium from "@/components/tournaments/TournamentPodium";
-import ShareResultButton from "@/components/tournaments/ShareResultButton";
+import ShareCardButton from "@/components/social/ShareCardButton";
 import SocialBar from "@/components/social/SocialBar";
 import TournamentAdminPanel from "@/components/tournaments/TournamentAdminPanel";
 import PlayGameForm from "@/components/games/PlayGameForm";
@@ -63,7 +63,7 @@ export default function TournamentPage() {
   const { tournamentId: tournamentIdParam } = route.useParams();
   const tournamentId = Number(tournamentIdParam);
 
-  const { player, activeClub, activeClubId, isClubAdmin, isMember } = useAuth();
+  const { player, activeClubId, isClubAdmin, isMember } = useAuth();
   const { data: tournament, isLoading } = useTournament(tournamentId);
   const { data: players } = usePlayers();
   const { byId, nameOf } = usePlayerLookup();
@@ -289,12 +289,10 @@ export default function TournamentPage() {
               /* The result is worth more to the club in its WhatsApp group
                  than on this page, and this is the moment it exists. */
               action={
-                <ShareResultButton
-                  club={activeClub}
+                <ShareCardButton
+                  url={`/api/og/tournaments/${tournament.id}.png`}
+                  fileName={`${tournament.name}.png`}
                   title={tournament.name}
-                  subtitle={when}
-                  places={podium}
-                  nameOf={nameOf}
                 />
               }
             />
