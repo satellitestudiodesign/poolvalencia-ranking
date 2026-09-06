@@ -32,24 +32,13 @@ const FALLBACK_IMAGE: Record<OgFallback, string> = {
   drills: DEFAULT_IMAGE,
 };
 
-/** The size of every file in FALLBACK_IMAGE, and of the generated cards in
- *  libs/browser/resultCard.ts — they are all 1.91:1. Declaring it lets a
- *  preview renderer lay the card out before the image has downloaded, which is
- *  the difference between a wide card and a small one in the feeds that give up
- *  waiting. Omitted for a club logo or an avatar, whose size we do not know. */
-const FALLBACK_SIZE = { width: "1200", height: "630" } as const;
-
-/** What the generated cards are actually served at: the same 1.91:1, drawn at
- *  twice the density so the picture is sharp when somebody opens it rather than
- *  only when a preview shrinks it (see libs/server/cardImage.ts). Declared
- *  honestly rather than as the nominal 1200x630 — a renderer reserves the box
- *  from the ratio, which is identical either way, and a stated size that is not
- *  the file's is the sort of thing that is true until it matters.
- *
- *  A card route falls back to /og/default.png when there is nothing to draw, so
- *  a card page occasionally states this while serving that. Same ratio, same
- *  layout, and the alternative is a second round trip in `head` to find out. */
-const CARD_SIZE = { width: "2400", height: "1260" } as const;
+/** The size of every file in FALLBACK_IMAGE and of every generated card — the
+ *  files in public/og, libs/server/cardImage.ts and libs/browser/resultCard.ts
+ *  are all 1200x630. Declaring it lets a preview renderer lay the card out
+ *  before the image has downloaded, which is the difference between a wide card
+ *  and a small one in the feeds that give up waiting. Omitted for a club logo or
+ *  an avatar, whose size we do not know. */
+const CARD_SIZE = { width: "1200", height: "630" } as const;
 
 /** Long descriptions are truncated by every preview renderer anyway, and a
  *  sentence cut mid-word reads as a bug rather than a limit. */
@@ -118,14 +107,8 @@ export function publicMeta({
     // has downloaded, instead of guessing small.
     ...(!ownImage || wideImage
       ? [
-          {
-            property: "og:image:width",
-            content: wideImage ? CARD_SIZE.width : FALLBACK_SIZE.width,
-          },
-          {
-            property: "og:image:height",
-            content: wideImage ? CARD_SIZE.height : FALLBACK_SIZE.height,
-          },
+          { property: "og:image:width", content: CARD_SIZE.width },
+          { property: "og:image:height", content: CARD_SIZE.height },
         ]
       : []),
     // summary_large_image only pays off with a wide card. A club logo is square,

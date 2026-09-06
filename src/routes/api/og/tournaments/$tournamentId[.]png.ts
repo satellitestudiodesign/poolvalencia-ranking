@@ -2,9 +2,14 @@ import { createFileRoute } from "@tanstack/react-router";
 import { getSupabaseServer } from "@/libs/supabase/server";
 import { resolveBracket, tournamentPodium } from "@/libs/algorithms/bracket";
 import { eventDates } from "@/libs/algorithms/eventDates";
-import { podiumIds, resultCardSpec } from "@/libs/algorithms/cards";
+import {
+  clubCardSpec,
+  podiumIds,
+  resultCardSpec,
+} from "@/libs/algorithms/cards";
+import { STATUS_PROSE } from "@/libs/algorithms/tournamentProse";
 import { PERSON_COLS, PLAYER_COLS } from "@/queries/public/shared";
-import type { TournamentMatch } from "@/types";
+import type { TournamentMatch, TournamentStatus } from "@/types";
 
 /** An hour on the visitor's side, a day on the CDN's: the picture only changes
  *  when the tournament does, and a preview cache holds it far longer than
@@ -16,7 +21,15 @@ const CACHE = "public, max-age=3600, s-maxage=86400";
 const LOCALE = "es-ES";
 
 /**
- * A tournament's link-preview image: the podium, drawn on demand.
+ * A tournament's link-preview image: the podium once there is one, and what
+ * phase it is in until then.
+ *
+ * The podium used to be the only card, drawn from whatever `tournamentPodium`
+ * returned — and for a league it returns a leader the moment there are
+ * entrants, so a tournament whose entries had only just opened previewed as
+ * three people on a podium they had not stood on. `status` decides now: only a
+ * finished tournament gets a podium, and the rest get their name, their dates
+ * and where they stand.
  *
  * Rendered here rather than written by a browser and stored, which is what this
  * route used to serve. Storing it meant the card only existed once a club admin
@@ -73,6 +86,23 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
           const club = tournament?.club;
           if (!tournament || !club) return fallback();
 
+          const origin = new URL(request.url).origin;
+          const status = tournament.status as TournamentStatus;
+          const dates = eventDates(
+            tournament.starts_on,
+            tournament.ends_on,
+            LOCALE,
+          );
+          // Imported here, not at the top: the renderer carries three fonts
+          // inlined as base64, and no other page's server render should have
+          // to parse them.
+          const cardImage = await import("@/libs/server/cardImage");
+          const chrome = {
+            logoUrl: club.logo_url,
+            markUrl: `${origin}/ball.png`,
+            size: sizeOf(request.url),
+          };
+
           const matches = resolveBracket(
             (tournament.tournament_matches ?? []) as TournamentMatch[],
           );
@@ -81,9 +111,29 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
             (tournament.tournament_players ?? []).map((e) => e.player_id),
             matches,
           );
-          // Nothing decided yet: a card whose podium is three dashes says
-          // less than the default one.
-          if (places.first === null) return fallback();
+
+          // Open, in groups, or still being played — and a finished one whose
+          // podium never resolved, which is a tournament with no results
+          // rather than one with a winner we failed to find. The club's layout,
+          // borrowed: the tournament is the headline, the club the byline, and
+          // the phase where a club's member count would be.
+          if (status !== "done" || places.first === null) {
+            const card = await cardImage.renderClubCard(
+              clubCardSpec({
+                name: tournament.name,
+                place: dates,
+                stat: STATUS_PROSE[status],
+                club: club.name,
+              }),
+              chrome,
+            );
+            return new Response(card.bytes, {
+              headers: {
+                "content-type": card.contentType,
+                "cache-control": CACHE,
+              },
+            });
+          }
 
           const ids = podiumIds(places);
           const { data: roster } = await supabase
@@ -98,28 +148,16 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
             ]),
           );
 
-          const origin = new URL(request.url).origin;
-          // Imported here, not at the top: the renderer carries five fonts
-          // inlined as base64, and that is 300kB no other page's server
-          // render should have to parse.
-          const { renderResultCardPng } =
-            await import("@/libs/server/cardImage");
-          const png = await renderResultCardPng(
+          const png = await cardImage.renderResultCardPng(
             resultCardSpec({
               club: club.name,
               title: tournament.name,
-              subtitle: eventDates(
-                tournament.starts_on,
-                tournament.ends_on,
-                LOCALE,
-              ),
+              subtitle: dates,
               places,
               nameOf: (playerId) => people.get(playerId)?.name ?? "—",
             }),
             {
-              logoUrl: club.logo_url,
-              markUrl: `${origin}/ball.png`,
-              size: sizeOf(request.url),
+              ...chrome,
               // In podium order, which is what podiumIds is for.
               avatarUrls: ids.map((id) => people.get(id)?.avatar_url),
             },

@@ -59,6 +59,9 @@ const INK_FAINT = "#8d95a1";
  *  time. The club is named, not tinted. */
 const STRIKE = "#f4c53c";
 
+/** Behind a club's logo, which is drawn for paper and usually transparent. */
+const LOGO_GROUND = "#ffffff";
+
 /** Not from the dictionary: a card is one image shared into chats in every
  *  language, and a brand name does not translate. */
 const APP_NAME = "PoolClubs";
@@ -284,9 +287,16 @@ function paintChrome(
     // different kind of thing.
     const radius = logoRadius ?? u(52);
     headerBottom = PAD + radius * 2;
-    ctx.save();
     ctx.beginPath();
     ctx.arc(PAD + radius, PAD + radius, radius, 0, Math.PI * 2);
+    // White under it, not felt. A club logo is artwork drawn for paper — a
+    // black eight-ball on transparency, most of the time — and on the card's
+    // dark felt the ball vanished into the background and left the ring of red
+    // lettering floating. Every one of these reads correctly on white, which is
+    // what the club drew it for.
+    ctx.fillStyle = LOGO_GROUND;
+    ctx.fill();
+    ctx.save();
     ctx.clip();
     draw(logo, PAD, PAD, radius * 2, radius * 2);
     ctx.restore();
@@ -477,6 +487,7 @@ export function paintClubCard(
   const { font, faces = [] } = opts;
   const { W, u, PAD, bodyTop, measure, face } = paintChrome(ctx, {
     ...opts,
+    club: spec.club,
     title: spec.title,
     subtitle: spec.subtitle,
   });
@@ -500,13 +511,16 @@ export function paintClubCard(
     face(person.image, person.name, x, pileY, radius);
   });
 
+  // Under the pile, or straight under the subtitle when there is none — a
+  // tournament in this layout has no faces, and leaving the pile's height empty
+  // read as a row of avatars that had failed to load.
   const statFont = font(500, u(48));
   ctx.font = statFont;
   ctx.fillStyle = INK_SOFT;
   ctx.fillText(
     fitText(spec.stat, W - PAD * 2, measure(statFont)),
     PAD,
-    pileY + radius + u(64),
+    shown.length ? pileY + radius + u(64) : bodyTop + u(56),
   );
 }
 
