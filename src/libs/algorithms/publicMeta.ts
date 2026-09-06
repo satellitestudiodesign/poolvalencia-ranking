@@ -32,9 +32,10 @@ const FALLBACK_IMAGE: Record<OgFallback, string> = {
   drills: DEFAULT_IMAGE,
 };
 
-/** The size of every file in FALLBACK_IMAGE. Declaring it lets a preview
- *  renderer lay the card out before the image has downloaded, which is the
- *  difference between a wide card and a small one in the feeds that give up
+/** The size of every file in FALLBACK_IMAGE, and of the generated cards in
+ *  libs/browser/resultCard.ts — they are all 1.91:1. Declaring it lets a
+ *  preview renderer lay the card out before the image has downloaded, which is
+ *  the difference between a wide card and a small one in the feeds that give up
  *  waiting. Omitted for a club logo or an avatar, whose size we do not know. */
 const FALLBACK_SIZE = { width: "1200", height: "630" } as const;
 
@@ -56,6 +57,7 @@ export function publicMeta({
   path,
   origin,
   image,
+  wideImage = false,
   fallback,
 }: {
   /** The document title. Already includes " · PoolClubs" if it wants it. */
@@ -67,6 +69,13 @@ export function publicMeta({
   /** The entity's own image — a club logo or a player avatar. A data: URI is
    *  skipped: uploaded avatars are stored inline, and no crawler will fetch one. */
   image?: string | null;
+  /** Set when `image` is a 1.91:1 card rather than a square logo or avatar —
+   *  the tournament podium card, say. It decides the two things a preview
+   *  renderer reads to lay the card out: the declared size, and whether Twitter
+   *  gets the large card or the small one. Wrong either way is a real, visible
+   *  bug: a wide card announced as square renders as a thumbnail beside the
+   *  text, which is what happened to the podium card before this existed. */
+  wideImage?: boolean;
   fallback: OgFallback;
 }) {
   const url = `${origin}${path}`;
@@ -91,17 +100,21 @@ export function publicMeta({
     { property: "og:url", content: url },
     { property: "og:image", content: imageUrl },
     { property: "og:image:alt", content: title.replace(/ · PoolClubs$/, "") },
-    ...(ownImage
-      ? []
-      : [
+    // Declared for anything known to be 1200x630 — the fallback cards and the
+    // wide ones — and omitted for a logo or an avatar, whose size we do not
+    // know. It is what lets a renderer reserve the wide slot before the image
+    // has downloaded, instead of guessing small.
+    ...(!ownImage || wideImage
+      ? [
           { property: "og:image:width", content: FALLBACK_SIZE.width },
           { property: "og:image:height", content: FALLBACK_SIZE.height },
-        ]),
+        ]
+      : []),
     // summary_large_image only pays off with a wide card. A club logo is square,
     // so it gets the small one and fills it rather than being letterboxed.
     {
       name: "twitter:card",
-      content: ownImage ? "summary" : "summary_large_image",
+      content: ownImage && !wideImage ? "summary" : "summary_large_image",
     },
   ];
 }

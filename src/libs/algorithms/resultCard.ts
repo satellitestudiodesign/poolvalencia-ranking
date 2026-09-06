@@ -115,17 +115,3 @@ export function wrapText(
   out.push(fitText(rest, max, measure));
   return out;
 }
-
-/**
- * Where a finished tournament's link-preview card lives.
- *
- * Deterministic, so no column has to remember it and the page that writes the
- * card and the route that serves it agree without talking. Inside the club's
- * own folder in the `club-photos` bucket — the storage policies authorise on
- * that first segment (see `clubPhotoFolder` in libs/browser/photoImage.ts and
- * the note in sql/schema.sql), so this needs no policy of its own. The gallery
- * ignores it: `og` is a folder, and clubPhotosQuery drops the rows storage
- * returns for those.
- */
-export const ogCardPath = (clubId: number, tournamentId: number) =>
-  `club-${clubId}/og/tournament-${tournamentId}.png`;

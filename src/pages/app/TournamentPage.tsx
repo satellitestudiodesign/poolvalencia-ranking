@@ -35,7 +35,6 @@ import MatchCard from "@/components/games/MatchCard";
 import MatchList from "@/components/games/MatchList";
 import TournamentPodium from "@/components/tournaments/TournamentPodium";
 import ShareResultButton from "@/components/tournaments/ShareResultButton";
-import OgCardWriter from "@/components/tournaments/OgCardWriter";
 import SocialBar from "@/components/social/SocialBar";
 import TournamentAdminPanel from "@/components/tournaments/TournamentAdminPanel";
 import PlayGameForm from "@/components/games/PlayGameForm";
@@ -300,17 +299,6 @@ export default function TournamentPage() {
               }
             />
             <TournamentPodium places={podium} byId={byId} />
-            {/* No UI: this is what makes a shared link preview the podium
-                rather than the app's default card. */}
-            <OgCardWriter
-              tournamentId={tournament.id}
-              club={activeClub}
-              canWrite={isClubAdmin}
-              title={tournament.name}
-              subtitle={when}
-              places={podium}
-              nameOf={nameOf}
-            />
             {/* Same target as the feed card's bar, so it is one thread seen
                 from two places rather than two threads. */}
             <div className="px-4 pb-3">

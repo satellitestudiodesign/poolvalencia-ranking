@@ -1,7 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
   fitText,
-  ogCardPath,
   podiumSteps,
   resultCardSpec,
   wrapText,
@@ -99,14 +98,5 @@ describe("resultCardSpec", () => {
       origin: "https://poolclubs.app",
     });
     expect(undated.subtitle).toBe("");
-  });
-});
-
-/** The writer (components/tournaments/OgCardWriter.tsx) and the route that
- *  serves the card (routes/api/og/tournaments) agree on this string and on
- *  nothing else, and the storage policy authorises on its first segment. */
-describe("ogCardPath", () => {
-  it("puts the card inside the club's own folder", () => {
-    expect(ogCardPath(7, 12)).toBe("club-7/og/tournament-12.png");
   });
 });

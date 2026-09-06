@@ -1,27 +1,34 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { getSupabaseServer } from "@/libs/supabase/server";
-import { ogCardPath } from "@/libs/algorithms/resultCard";
-import { CLUB_PHOTOS_BUCKET } from "@/queries/clubPhotos";
+import { resolveBracket, tournamentPodium } from "@/libs/algorithms/bracket";
+import { eventDates } from "@/libs/algorithms/eventDates";
+import { resultCardSpec } from "@/libs/algorithms/resultCard";
+import { PERSON_COLS, PLAYER_COLS } from "@/queries/public/shared";
+import type { TournamentMatch } from "@/types";
 
-/** Long enough that a crawler re-fetching the same link is served from the
- *  edge, short enough that a card redrawn after a correction is picked up the
- *  same day. Preview caches are their own thing and honour neither. */
-const CACHE = "public, max-age=3600";
+/** An hour on the visitor's side, a day on the CDN's: the picture only changes
+ *  when the tournament does, and a preview cache holds it far longer than
+ *  either anyway. */
+const CACHE = "public, max-age=3600, s-maxage=86400";
+
+/** Link previews are Spanish, like every other public head tag in this app —
+ *  the crawler's Accept-Language is not the reader's. */
+const LOCALE = "es-ES";
 
 /**
- * A tournament's link-preview image: its podium if one has been drawn, and the
- * app's default card if not.
+ * A tournament's link-preview image: the podium, drawn on demand.
  *
- * The indirection is the point. `og:image` has to be a URL that answers on the
- * first request a crawler makes, and the podium PNG is written by a member's
- * browser some time after the tournament finishes (see
- * pages/app/TournamentPage.tsx). Pointing the meta tag straight at storage
- * would mean a 404 — and a preview with no image at all — for every tournament
- * whose card has not been drawn yet. This route decides at fetch time instead.
+ * Rendered here rather than written by a browser and stored, which is what this
+ * route used to serve. Storing it meant the card only existed once a club admin
+ * had opened the finished tournament, that nobody else could produce one, and
+ * that a correction afterwards left the old picture in place. Drawing it per
+ * request costs ~100ms once and then sits in the CDN — see
+ * libs/server/cardImage.ts for why that is possible without a native or wasm
+ * rasteriser.
  *
- * Read through the anon-facing client, so a private club's tournament falls
- * back like anything else: the card is only ever drawn for public clubs, and
- * the bucket is public, so nothing here can leak a club that opted out.
+ * Anything at all going wrong falls back to the app's default card: a link that
+ * previews the wrong picture is a disappointment, a link that previews a broken
+ * image is a bug.
  */
 export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
   server: {
@@ -38,24 +45,87 @@ export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
         );
         if (!Number.isInteger(id)) return fallback();
 
-        const supabase = getSupabaseServer();
-        const { data: tournament } = await supabase
-          .from("tournaments")
-          .select("club_id")
-          .eq("id", id)
-          .maybeSingle();
-        if (!tournament) return fallback();
+        try {
+          const supabase = getSupabaseServer();
 
-        const { data } = supabase.storage
-          .from(CLUB_PHOTOS_BUCKET)
-          .getPublicUrl(ogCardPath(tournament.club_id, id));
+          // `!inner` with the is_public filter is what makes a private club's
+          // tournament indistinguishable from one that does not exist — the
+          // same rule the public page itself is built on.
+          const { data: tournament } = await supabase
+            .from("tournaments")
+            .select(
+              `id, name, format, starts_on, ends_on, status,
+                 club:clubs!inner(name, slug, logo_url, theme_color, is_public),
+                 tournament_players(player_id),
+                 tournament_matches(*)`,
+            )
+            .eq("id", id)
+            .eq("club.is_public", true)
+            .maybeSingle();
 
-        const card = await fetch(data.publicUrl);
-        if (!card.ok) return fallback();
+          const club = tournament?.club;
+          if (!tournament || !club) return fallback();
 
-        return new Response(card.body, {
-          headers: { "content-type": "image/png", "cache-control": CACHE },
-        });
+          const matches = resolveBracket(
+            (tournament.tournament_matches ?? []) as TournamentMatch[],
+          );
+          const places = tournamentPodium(
+            tournament.format as "double_elim" | "league" | "group_knockout",
+            (tournament.tournament_players ?? []).map((e) => e.player_id),
+            matches,
+          );
+          // Nothing decided yet: a card whose podium is three dashes says
+          // less than the default one.
+          if (places.first === null) return fallback();
+
+          const ids = [places.first, places.second, ...places.third].filter(
+            (playerId): playerId is number => playerId !== null,
+          );
+          const { data: roster } = await supabase
+            .from("players")
+            .select(`${PLAYER_COLS}, person:people(${PERSON_COLS})`)
+            .in("id", ids);
+
+          const names = new Map(
+            (roster ?? []).map((row) => [
+              row.id,
+              (row.person as { name?: string } | null)?.name ?? "—",
+            ]),
+          );
+
+          const origin = new URL(request.url).origin;
+          // Imported here, not at the top: the renderer carries five fonts
+          // inlined as base64, and that is 300kB no other page's server
+          // render should have to parse.
+          const { renderResultCardPng } =
+            await import("@/libs/server/cardImage");
+          const png = await renderResultCardPng(
+            resultCardSpec({
+              club: club.name,
+              clubSlug: club.slug,
+              title: tournament.name,
+              subtitle: eventDates(
+                tournament.starts_on,
+                tournament.ends_on,
+                LOCALE,
+              ),
+              places,
+              nameOf: (playerId) => names.get(playerId) ?? "—",
+              origin,
+            }),
+            {
+              color: club.theme_color,
+              logoUrl: club.logo_url,
+              markUrl: `${origin}/ball.png`,
+            },
+          );
+
+          return new Response(png, {
+            headers: { "content-type": "image/png", "cache-control": CACHE },
+          });
+        } catch {
+          return fallback();
+        }
       },
     },
   },

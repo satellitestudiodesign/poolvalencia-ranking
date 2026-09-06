@@ -74,6 +74,9 @@ export const Route = createFileRoute("/_public/tournaments/$tournamentId")({
         // back the podium card once a member's browser has drawn one, and the
         // app's default card until then.
         image: `/api/og/tournaments/${tournament.id}.png`,
+        // 1200x630, whether it is the podium card or the default one the route
+        // falls back to. Without this the card previews as a thumbnail.
+        wideImage: true,
         fallback: "tournaments",
       }),
       links: canonical(path, origin),
