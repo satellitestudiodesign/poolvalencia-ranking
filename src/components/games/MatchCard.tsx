@@ -1,6 +1,7 @@
 import type { BracketIndex } from "@/libs/algorithms/bracket";
 import type { TournamentMatch } from "@/types";
 import { useT } from "@/i18n";
+import GameLinkOverlay from "@/components/games/GameLinkOverlay";
 import PlayerLink from "@/components/players/PlayerLink";
 
 /**
@@ -14,6 +15,7 @@ export default function MatchCard({
   match,
   nameOf,
   slugOf,
+  clubSlug,
   index,
   onRecord,
 }: {
@@ -22,6 +24,9 @@ export default function MatchCard({
   /** The person's slug for each id, for the public side's /players/:slug
    *  links. Omitted inside a club, where PlayerLink uses the club route. */
   slugOf?: (id: number) => string | undefined;
+  /** The club's slug on the public side, so a played fixture can link to the
+   *  result's own page. Omitted inside a club, where the route carries it. */
+  clubSlug?: string;
   /** Numbering and seat provenance, shared across every view. */
   index?: BracketIndex;
   /** Omitted when the viewer cannot file a result, or the match is not ready. */
@@ -76,7 +81,7 @@ export default function MatchCard({
               playerId={playerId}
               playerSlug={slugOf?.(playerId)}
               onClick={(e) => e.stopPropagation()}
-              className="transition-colors duration-150 hover:text-strike"
+              className="relative transition-colors duration-150 hover:text-strike"
             >
               {nameOf(playerId)}
             </PlayerLink>
@@ -116,11 +121,28 @@ export default function MatchCard({
 
   // A played match has something in it, so it is the filled one; a fixture that
   // has not happened yet is an outline waiting to be filled in.
-  const surface = `w-full rounded-control border border-hairline px-3 py-2 has-[[data-highlight]]:border-strike/40 has-[[data-highlight]]:bg-strike-tint ${
+  const surface = `relative w-full rounded-control border border-hairline px-3 py-2 has-[[data-highlight]]:border-strike/40 has-[[data-highlight]]:bg-strike-tint ${
     played ? "bg-felt-raised" : "bg-felt"
   }`;
 
-  if (!onRecord) return <div className={surface}>{body}</div>;
+  // A fixture that has been played is a result, and a result has a page: the
+  // whole card is the way to it. Only the names opt out — on a bracket they
+  // follow a player through the draw instead.
+  const link = match.game_id ? (
+    <GameLinkOverlay gameId={match.game_id} clubSlug={clubSlug} />
+  ) : null;
+
+  if (!onRecord)
+    return (
+      <div
+        className={`${surface} ${
+          link ? "transition-colors duration-150 hover:bg-rail" : ""
+        }`}
+      >
+        {link}
+        {body}
+      </div>
+    );
 
   // Not a native <button> because a player's name inside it is a link to
   // their page, and interactive content cannot nest inside a <button>.

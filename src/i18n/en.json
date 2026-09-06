@@ -727,8 +727,6 @@
   "tournaments.generateKnockout": "Draw the bracket",
   "tournaments.knockoutReady": "Bracket drawn",
   "tournaments.results": "Final result",
-  "tournaments.shareCard": "Share result",
-  "tournaments.cardSaved": "Card saved",
   "tournaments.place": "Place {n}",
   "tournaments.view": "View",
   "tournaments.viewBracket": "Bracket",

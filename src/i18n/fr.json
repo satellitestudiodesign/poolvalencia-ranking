@@ -727,8 +727,6 @@
   "tournaments.generateKnockout": "Tirer le tableau",
   "tournaments.knockoutReady": "Tableau tiré",
   "tournaments.results": "Résultat final",
-  "tournaments.shareCard": "Partager le résultat",
-  "tournaments.cardSaved": "Image enregistrée",
   "tournaments.place": "Place {n}",
   "tournaments.view": "Vue",
   "tournaments.viewBracket": "Tableau",

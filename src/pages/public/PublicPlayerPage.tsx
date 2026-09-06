@@ -5,7 +5,6 @@ import { Link, getRouteApi } from "@tanstack/react-router";
 import PublicShell from "@/components/layout/PublicShell";
 import GamesList from "@/components/games/GamesList";
 import ShareButton from "@/components/social/ShareButton";
-import ShareCardButton from "@/components/social/ShareCardButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -68,6 +67,12 @@ export default function PublicPlayerPage() {
   });
 
   const games = gameResults.flatMap((r) => r.data.games);
+  // A person's history spans every club they play for, and a result's public
+  // page lives under its own club's slug — so the row needs the club the game
+  // was played in, not "the" club.
+  const slugByClub = new Map(
+    person.memberships.map((m) => [m.club.id, m.club.slug]),
+  );
   const roster: PublicPlayer[] = rosterResults.flatMap((r) => r.data);
 
   const stats = useMemo(() => {
@@ -210,7 +215,13 @@ export default function PublicPlayerPage() {
                 {/* No playerId: the accent marks the frames this person won,
                     and across clubs there is no single membership id to test.
                     GamesList takes one id, so it gets none. */}
-                <GamesList games={history} players={roster} showDates public />
+                <GamesList
+                  games={history}
+                  players={roster}
+                  showDates
+                  public
+                  clubSlugOf={(game) => slugByClub.get(game.club_id)}
+                />
               </div>
             </Card>
           </>
@@ -287,13 +298,8 @@ function PlayerHero({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
-            {/* The picture and the link are two different things to hand
-                somebody — one goes in a story, the other in a message. */}
-            <ShareCardButton
-              url={`/api/og/players/${person.slug}.png`}
-              fileName={`${person.slug}.png`}
-              title={person.name}
-            />
+            {/* The link carries the picture with it: what it unfurls to in a
+                chat is the card drawn by /api/og/players. */}
             <ShareButton title={person.name} url={url} />
           </div>
         </div>

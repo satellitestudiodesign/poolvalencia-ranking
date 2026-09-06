@@ -7,6 +7,7 @@ import { LuPencil, LuSwords } from "react-icons/lu";
 import { dayLabel, startsNewDay, timeOf } from "@/libs/algorithms/dayLabel";
 import { useT } from "@/i18n";
 import { AppLink } from "@/components/layout/AppLink";
+import GameLinkOverlay from "@/components/games/GameLinkOverlay";
 
 const NAME_LINK = "transition-colors duration-150 hover:text-strike";
 
@@ -18,24 +19,24 @@ type GamesListPlayer = Pick<Player, "id" | "name" | "slug">;
 /**
  * One player's name on the tape.
  *
- * Inside the club it is text, not a link: the row itself opens the result now,
- * and a row full of links to somewhere else is a row you cannot tap. The public
- * tape keeps the names as links, because out there the result has no page of
- * its own to go to.
+ * Text, not a link, wherever the row itself opens the result: a row full of
+ * links to somewhere else is a row you cannot tap. Only a tape whose results
+ * have no page to go to — a public club that cannot be resolved to a slug —
+ * spends the name on a link to the person instead.
  */
 function Name({
   player,
-  isPublic,
+  linked,
 }: {
   /** Undefined for somebody who has since left the club: the game keeps its id,
    *  the roster no longer has the row. The em dash is what the rest of the app
    *  shows for that — see usePlayerLookup. */
   player: GamesListPlayer | undefined;
-  isPublic: boolean;
+  linked: boolean;
 }) {
   if (!player) return <>—</>;
 
-  return isPublic ? (
+  return linked ? (
     <Link
       to="/players/$playerSlug"
       params={{ playerSlug: player.slug }}
@@ -60,21 +61,21 @@ function Team({
   id1,
   id2,
   byId,
-  isPublic,
+  linked,
 }: {
   id1: number;
   id2?: number | null;
   byId: Map<number, GamesListPlayer>;
-  isPublic: boolean;
+  linked: boolean;
 }) {
   return (
     <>
       <span className="truncate">
-        <Name player={byId.get(id1)} isPublic={isPublic} />
+        <Name player={byId.get(id1)} linked={linked} />
       </span>
       {id2 != null && (
         <span className="truncate">
-          <Name player={byId.get(id2)} isPublic={isPublic} />
+          <Name player={byId.get(id2)} linked={linked} />
         </span>
       )}
     </>
@@ -103,9 +104,13 @@ interface GamesListProps {
    * business, and anon cannot read either table.
    */
   public?: boolean;
-  /** The club's slug, on the public side only: with it every row links to the
-   *  result's own page, without it the tape stays a list of plain facts. */
-  clubSlug?: string;
+  /**
+   * Which club a given result belongs to, on the public side only: with a slug
+   * the row links to the result's own page, without one the tape stays a list
+   * of plain facts. A function rather than one slug because a person's history
+   * is every club they play for, not one.
+   */
+  clubSlugOf?: (game: Game) => string | undefined;
   /**
    * Show the way in to correcting a result. The club admin's, and off
    * everywhere else — a tape on a player's page or a wall display is something
@@ -133,7 +138,7 @@ export default function GamesList({
   showSocial = true,
   stickyDates = false,
   public: isPublic = false,
-  clubSlug,
+  clubSlugOf,
   admin = false,
 }: GamesListProps) {
   const { t, locale } = useT();
@@ -169,6 +174,9 @@ export default function GamesList({
         } = game;
 
         const isDoubles = mode === "doubles";
+        // Public only: inside a club the route already carries the slug.
+        const publicClubSlug = isPublic ? clubSlugOf?.(game) : undefined;
+        const linkable = isPublic ? publicClubSlug !== undefined : true;
 
         // bigint columns, so these arrive as numbers
         const p1Score = player_1_score;
@@ -228,22 +236,8 @@ export default function GamesList({
                     above this on the z axis. Two destinations, because the
                     result has a page on each side: the editor inside the club,
                     the public one out here. */}
-                {isPublic ? (
-                  clubSlug && (
-                    <Link
-                      to="/clubs/$slug/game/$gameId"
-                      params={{ slug: clubSlug, gameId: id }}
-                      aria-label={t("games.openResult")}
-                      className="absolute inset-0 rounded-control"
-                    />
-                  )
-                ) : (
-                  <AppLink
-                    to="/app/$clubSlug/games/$gameId"
-                    params={{ gameId: id }}
-                    aria-label={t("games.openResult")}
-                    className="absolute inset-0 rounded-control"
-                  />
+                {linkable && (
+                  <GameLinkOverlay gameId={id} clubSlug={publicClubSlug} />
                 )}
                 <time
                   dateTime={played_at}
@@ -258,7 +252,7 @@ export default function GamesList({
                     id1={player_1_id}
                     id2={isDoubles ? player_1b_id : undefined}
                     byId={byId}
-                    isPublic={isPublic}
+                    linked={!linkable}
                   />
                 </span>
                 <span className="shrink-0 font-mono text-h4 font-semibold tabular-nums">
@@ -275,7 +269,7 @@ export default function GamesList({
                     id1={player_2_id}
                     id2={isDoubles ? player_2b_id : undefined}
                     byId={byId}
-                    isPublic={isPublic}
+                    linked={!linkable}
                   />
                 </span>
                 {admin && (

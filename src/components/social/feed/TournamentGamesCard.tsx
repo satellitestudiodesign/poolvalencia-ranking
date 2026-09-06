@@ -116,12 +116,19 @@ export default function TournamentGamesCard({
                 </span>
               </div>
               <div className="mt-1 flex items-center gap-2">
-                <time
-                  dateTime={game.played_at}
-                  className="shrink-0 pl-1 font-mono text-caption tabular-nums text-ink-ghost"
+                {/* The time doubles as the way into the fixture's own page —
+                    the row cannot be one big link, because the names in it are
+                    already links and the social bar is already buttons. */}
+                <AppLink
+                  to="/app/$clubSlug/games/$gameId"
+                  params={{ gameId: game.id }}
+                  aria-label={t("games.openResult")}
+                  className="shrink-0 pl-1 font-mono text-caption tabular-nums text-ink-ghost transition-colors duration-150 hover:text-strike"
                 >
-                  {timeOf(new Date(game.played_at), locale)}
-                </time>
+                  <time dateTime={game.played_at}>
+                    {timeOf(new Date(game.played_at), locale)}
+                  </time>
+                </AppLink>
                 <div className="min-w-0 flex-1">
                   <SocialBar target={{ gameId: game.id }} preview />
                 </div>
