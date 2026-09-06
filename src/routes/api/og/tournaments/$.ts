@@ -50,19 +50,18 @@ const LOCALE = "es-ES";
 const sizeOf = (url: string): "square" | "wide" =>
   new URL(url).searchParams.get("size") === "square" ? "square" : "wide";
 
-export const Route = createFileRoute("/api/og/tournaments/$tournamentId.png")({
+export const Route = createFileRoute("/api/og/tournaments/$")({
   server: {
     handlers: {
       GET: async ({ params, request }) => {
         const fallback = () =>
           Response.redirect(new URL("/og/default.png", request.url), 302);
 
-        // The route file is `$tournamentId[.]png`, and the router names the
-        // param after the whole segment. Strip the extension if it came
-        // through in the value too — either way what is wanted is the id.
-        const id = Number(
-          String(params["tournamentId.png"] ?? "").replace(/\.png$/, ""),
-        );
+        // A splat rather than `$tournamentId.png`: the router would name that
+        // param after the whole segment, extension included, and warn on every
+        // boot that "tournamentId.png" is not an identifier. The URL is the
+        // same either way, and the id is the splat with the extension off.
+        const id = Number(String(params._splat ?? "").replace(/\.png$/, ""));
         if (!Number.isInteger(id)) return fallback();
 
         try {
