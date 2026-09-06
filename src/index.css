@@ -981,6 +981,26 @@ button.lift:active {
   --wash: 6%;
 }
 
+/* The drawn pool hall a club card falls back to when the club has published no
+   venue photo (art/venue-fallback.webp, see PublicClubsPage's ClubCard).
+
+   The band used to be bare felt-raised, which on a grid where every other card
+   carries a photograph does not read as "no photo yet" — it reads as an image
+   that failed to load, and on a phone it is 144px of nothing.
+
+   One asset for both themes, dimmed rather than redrawn. It is already a
+   duotone in the public skin's own blue, so on the light card it needs almost
+   nothing done to it; on the near-black card the same pale drawing would be a
+   lit rectangle, so it drops to a ghost. Deliberately quieter than a real cover
+   in both: this is a placeholder and it should lose to any club that bothered
+   to upload a photo. Tune the two numbers, not the file. */
+.venue-fallback {
+  opacity: 0.45;
+}
+:root[data-theme="light"] .venue-fallback {
+  opacity: 0.75;
+}
+
 /* The bar is part of the page until the page moves under it. At rest it has no
    surface, no blur and no edge — it simply floats over the canvas the hero sits
    on. As soon as anything scrolls beneath it, it takes all three, which is the
@@ -1342,7 +1362,7 @@ button.lift:active {
      fill `backwards` — so the tail of a staggered grid would sit invisible for
      up to 360ms before snapping in. Zero the stagger instead. */
   .rise,
-  .pop {
+  .pop-in {
     animation-delay: 0ms !important;
   }
 

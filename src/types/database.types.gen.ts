@@ -672,6 +672,7 @@ export type Database = {
           id: number
           is_caretaker: boolean
           is_device: boolean
+          joined_at: string
           person_id: number
           present_since: string | null
           queued_at: string | null
@@ -685,6 +686,7 @@ export type Database = {
           id?: number
           is_caretaker?: boolean
           is_device?: boolean
+          joined_at?: string
           person_id: number
           present_since?: string | null
           queued_at?: string | null
@@ -698,6 +700,7 @@ export type Database = {
           id?: number
           is_caretaker?: boolean
           is_device?: boolean
+          joined_at?: string
           person_id?: number
           present_since?: string | null
           queued_at?: string | null

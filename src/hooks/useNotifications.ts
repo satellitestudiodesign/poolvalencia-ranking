@@ -31,6 +31,27 @@ type NotificationKind =
  *  call_ranking_night refuses a second call inside — see sql/schema.sql. */
 const NIGHT_CALL_WINDOW_MS = 2 * 60 * 60 * 1000;
 
+/**
+ * Whether an event is one this member could have been there for.
+ *
+ * The feed is derived from the club's own tables, not from a per-player
+ * notifications table, so on the day somebody joins every open tournament and
+ * every drill in the library is "new" to them — a bell with thirty unread
+ * items about things that happened before they had an account here. `joined_at`
+ * is the line: their membership row's own timestamp, see sql/schema.sql.
+ *
+ * Rows backfilled before the column existed sit at the epoch, so nothing an
+ * existing member could already see disappears from under them. An event with
+ * no timestamp at all counts as new — hiding something we cannot date is the
+ * worse of the two mistakes.
+ */
+export const since = (joinedAt: string | null | undefined) => {
+  const start = joinedAt ? new Date(joinedAt).getTime() : 0;
+  const from = Number.isNaN(start) ? 0 : start;
+  return (at: string | null | undefined) =>
+    !at || new Date(at).getTime() >= from;
+};
+
 export type AppNotification = {
   /** Stable and unique per underlying event *and* its current state, so an
    *  already-seen row reappears the moment the thing it describes changes
@@ -204,6 +225,8 @@ export const useNotifications = () => {
     if (!player) return [];
 
     const list: AppNotification[] = [];
+    // Anything the club did before this member arrived is not news to them.
+    const sinceJoined = since(player.joined_at);
 
     for (const match of pendingMatches ?? []) {
       list.push({
@@ -254,6 +277,7 @@ export const useNotifications = () => {
 
     for (const tour of tournaments ?? []) {
       if (tour.status !== "open") continue;
+      if (!sinceJoined(tour.created_at)) continue;
       if (tour.category !== null && tour.category !== player.category) continue;
       if (myTournamentIds?.has(tour.id)) continue;
 
@@ -274,6 +298,7 @@ export const useNotifications = () => {
     // the record even when the push never arrives (see push.functions.ts).
     for (const c of comments ?? []) {
       if (c.author_player_id === player.id) continue;
+      if (!sinceJoined(c.created_at)) continue;
       if (!player.slug || !mentionedSlugs(c.body).includes(player.slug))
         continue;
 
@@ -340,6 +365,7 @@ export const useNotifications = () => {
     // off, so a "new drill" bell would only lead somewhere broken.
     for (const drill of DRILLS_ENABLED ? (drills ?? []) : []) {
       if (triedDrillIds.has(drill.id)) continue;
+      if (!sinceJoined(drill.created_at)) continue;
 
       list.push({
         id: `drill-added:${drill.id}`,

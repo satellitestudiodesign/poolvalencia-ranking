@@ -14,6 +14,7 @@ const player = (id: number, name: string): Player => ({
   name,
   category: 2,
   club_id: 1,
+  joined_at: "1970-01-01T00:00:00Z",
   status: "active",
   person_id: id,
   slug: name.toLowerCase(),

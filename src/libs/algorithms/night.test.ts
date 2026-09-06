@@ -43,6 +43,7 @@ const player = (over: Partial<Player> = {}): Player => ({
   name: "p1",
   category: 2,
   club_id: 1,
+  joined_at: "1970-01-01T00:00:00Z",
   status: "active",
   person_id: 1,
   slug: "p1",

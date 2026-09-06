@@ -10,8 +10,9 @@ import { CONTACT_EMAIL } from "@/content/legal";
  * still belongs in src/i18n.
  *
  * Every claim here has to stay true of the product as shipped. The pricing page
- * in particular is a promise: the grandfathering sentence is the reason a club
- * signs up during the beta, and it is the sentence that will be quoted back.
+ * is the one that gets quoted back, so it says only what is certain: free for
+ * clubs through the beta, one per-club fee afterwards, and notice before it
+ * starts. No promise about what a beta club pays later, because there isn't one.
  */
 export type ContentSection = {
   heading?: string;
@@ -32,9 +33,9 @@ export type ContentDoc = {
 
 const PRICING_ES: ContentDoc = {
   title: "Precio",
-  lede: "Los jugadores no pagan nunca. Los clubes de la beta, tampoco: ni ahora ni después.",
+  lede: "Los jugadores no pagan nunca. Los clubes, gratis durante la beta.",
   callout:
-    "Los clubes que prueban PoolClubs durante la beta lo conservan gratis para siempre.",
+    "PoolClubs es gratis para los clubes mientras dure la beta. Después habrá una cuota por club y mes.",
   sections: [
     {
       heading: "Hoy",
@@ -44,15 +45,10 @@ const PRICING_ES: ContentDoc = {
       ],
     },
     {
-      heading: "Los clubes de la beta",
-      body: [
-        "Quien entra durante la beta se queda gratis de forma permanente, también cuando haya cuota para los clubes nuevos. No es una oferta de lanzamiento con letra pequeña: es la condición por probarlo cuando todavía faltaban cosas.",
-      ],
-    },
-    {
       heading: "Más adelante",
       body: [
         "Cuando el producto esté cerrado habrá una cuota por club y mes. Una sola: sin asientos, sin tramos, sin extras por socio.",
+        "Lo avisaremos con antelación, dentro de la aplicación y por correo. Ningún club empieza a pagar sin decir que sí, y un club que prefiera no seguir se lleva sus datos.",
         "La referencia es la que el club ya conoce: menos de lo que factura una mesa en una noche.",
         "Los jugadores seguirán sin pagar. Es un servicio que el club da a sus socios, no una suscripción que cada socio contrata.",
       ],
@@ -84,8 +80,9 @@ const PRICING_ES: ContentDoc = {
 
 const PRICING_EN: ContentDoc = {
   title: "Pricing",
-  lede: "Players never pay. Neither do the beta clubs — not now, not later.",
-  callout: "Clubs that try PoolClubs during the beta keep it free, forever.",
+  lede: "Players never pay. Clubs are free for as long as the beta lasts.",
+  callout:
+    "PoolClubs is free for clubs while the beta lasts. After that there will be one fee, per club, per month.",
   sections: [
     {
       heading: "Today",
@@ -95,15 +92,10 @@ const PRICING_EN: ContentDoc = {
       ],
     },
     {
-      heading: "The beta clubs",
-      body: [
-        "Anyone who joins during the beta stays free permanently, including once new clubs are charged. This is not a launch offer with small print: it is the deal for testing it while pieces were still missing.",
-      ],
-    },
-    {
       heading: "Later",
       body: [
         "Once the product is finished there will be one fee, per club, per month. One: no seats, no tiers, no per-member extras.",
+        "We will say so in advance, in the app and by email. No club starts paying without agreeing to it, and a club that would rather stop takes its data with it.",
         "The benchmark is the one a club already knows: less than one night's table time.",
         "Players will still pay nothing. This is a service the club gives its members, not a subscription each member signs up for.",
       ],
@@ -135,9 +127,9 @@ const PRICING_EN: ContentDoc = {
 
 const PRICING_FR: ContentDoc = {
   title: "Tarif",
-  lede: "Les joueurs ne paient jamais. Les clubs de la bêta non plus — ni maintenant, ni plus tard.",
+  lede: "Les joueurs ne paient jamais. Les clubs, gratuit pendant la bêta.",
   callout:
-    "Les clubs qui essaient PoolClubs pendant la bêta le conservent gratuitement, pour toujours.",
+    "PoolClubs est gratuit pour les clubs tant que dure la bêta. Ensuite, il y aura un tarif unique, par club et par mois.",
   sections: [
     {
       heading: "Aujourd'hui",
@@ -147,15 +139,10 @@ const PRICING_FR: ContentDoc = {
       ],
     },
     {
-      heading: "Les clubs de la bêta",
-      body: [
-        "Ceux qui rejoignent pendant la bêta restent gratuits de façon permanente, y compris lorsque les nouveaux clubs seront facturés. Ce n'est pas une offre de lancement en petits caractères : c'est la contrepartie d'avoir testé le produit alors qu'il manquait encore des pièces.",
-      ],
-    },
-    {
       heading: "Plus tard",
       body: [
         "Quand le produit sera abouti, il y aura un tarif unique, par club et par mois. Un seul : pas de sièges, pas de paliers, pas de suppléments par membre.",
+        "Nous le préviendrons à l'avance, dans l'application et par e-mail. Aucun club ne commence à payer sans l'avoir accepté, et un club qui préfère s'arrêter repart avec ses données.",
         "La référence est celle que le club connaît déjà : moins qu'une soirée de table.",
         "Les joueurs ne paieront toujours rien. C'est un service que le club offre à ses membres, pas un abonnement que chacun souscrit.",
       ],
@@ -308,7 +295,7 @@ const CONTACT_ES: ContentDoc = {
       heading: "Si eres un club",
       body: [
         "Cuéntanos cuántos socios sois y cómo lleváis hoy el ranking. Podemos montar el club contigo y dejarlo listo antes de que lo enseñes a tus socios.",
-        "Durante la beta el servicio es gratis, y los clubes que entran ahora lo conservan gratis de forma permanente.",
+        "Durante la beta el servicio es gratis para el club. Más adelante habrá una cuota por club y mes, avisada con antelación.",
       ],
     },
     {
@@ -344,7 +331,7 @@ const CONTACT_EN: ContentDoc = {
       heading: "If you run a club",
       body: [
         "Tell us how many members you have and how the ranking is kept today. We can set the club up with you and have it ready before you show it to your members.",
-        "During the beta the service is free, and clubs that join now keep it free permanently.",
+        "During the beta the service is free for the club. Later there will be one fee, per club, per month, announced in advance.",
       ],
     },
     {
@@ -378,7 +365,7 @@ const CONTACT_FR: ContentDoc = {
       heading: "Si vous gérez un club",
       body: [
         "Dites-nous combien vous êtes de membres et comment le classement est tenu aujourd'hui. Nous pouvons configurer le club avec vous et le rendre prêt avant que vous ne le montriez à vos membres.",
-        "Pendant la bêta le service est gratuit, et les clubs qui rejoignent maintenant le conservent gratuitement de façon permanente.",
+        "Pendant la bêta le service est gratuit pour le club. Plus tard, il y aura un tarif unique par club et par mois, annoncé à l'avance.",
       ],
     },
     {

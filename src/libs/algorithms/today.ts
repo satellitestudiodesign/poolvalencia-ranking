@@ -73,6 +73,40 @@ export const pairKey = (a: number, b: number) =>
   a < b ? `${a}-${b}` : `${b}-${a}`;
 
 /**
+ * The moment somebody started waiting: when they arrived, or when their last
+ * game ended, whichever is later.
+ *
+ * The second half is the whole of the rotation. Arrival alone puts the person
+ * who has been here since six at the head of the queue all evening, however
+ * many racks they have had; the winner of the game that has just finished has
+ * waited no time at all and belongs at the back.
+ *
+ * Parsed rather than compared as strings: present_since is written by the
+ * browser as `...Z` and played_at comes back from Postgres with a `+00:00`, and
+ * those two do not sort against each other. A player with neither reads as
+ * having waited forever, which is what the sort should do with somebody it
+ * cannot date.
+ */
+export const waitingSince = (
+  player: { present_since: string | null },
+  lastPlayed: number | undefined,
+) =>
+  Math.max(
+    Number.isNaN(Date.parse(player.present_since ?? ""))
+      ? 0
+      : Date.parse(player.present_since ?? ""),
+    lastPlayed ?? 0,
+  );
+
+/** Longest wait first. A comparator rather than a sort, so it can be checked
+ *  against a list without a hook — see today.test.ts. */
+export const byWait =
+  (lastPlayed: Map<number, number>) =>
+  <T extends { id: number; present_since: string | null }>(a: T, b: T) =>
+    waitingSince(a, lastPlayed.get(a.id)) -
+    waitingSince(b, lastPlayed.get(b.id));
+
+/**
  * Who could play whom, out of the people waiting.
  *
  * `maxGroups` is how many matches are wanted — the free tables, in practice.

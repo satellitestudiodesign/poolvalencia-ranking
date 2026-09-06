@@ -34,9 +34,19 @@ export default function ProsePage({ id }: { id: ProseId }) {
   // up with is shown in Spanish rather than as a blank page.
   const doc: ContentDoc = DOCS[id][lang] ?? DOCS[id].es;
 
+  /* Display size is for pages whose subject *is* the thing on them (see
+     publicTitleStyles); a privacy policy is a document you were sent to, and
+     it should not open at 60px. Derived from LEGAL rather than a second list,
+     so a fourth legal document cannot be added and forgotten here. */
+  const isLegal = id in LEGAL;
+
   return (
     <>
-      <PublicPageTitle size="display" title={doc.title} lede={doc.lede}>
+      <PublicPageTitle
+        size={isLegal ? "page" : "display"}
+        title={doc.title}
+        lede={doc.lede}
+      >
         {doc.updated && (
           <p className="mt-3 text-caption text-ink-faint">
             {t("public.legal.updated", {

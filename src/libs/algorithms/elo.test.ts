@@ -7,6 +7,7 @@ const player = (id: number, name: string, category: 1 | 2 | 3 = 2): Player => ({
   name,
   category,
   club_id: 1,
+  joined_at: "1970-01-01T00:00:00Z",
   status: "active",
   person_id: id,
   slug: name.toLowerCase(),

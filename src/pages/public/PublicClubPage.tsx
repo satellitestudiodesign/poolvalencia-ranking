@@ -97,12 +97,60 @@ const listedOf = (roster: PublicPlayer[]) =>
  * and a club's results are two different things to link somebody at, and one
  * page that stacked all four made the reader scroll past three of them.
  */
+/**
+ * The visitor's own row in this club, if they have one.
+ *
+ * A member reading their club's public page is not a lead to convert — they
+ * already went through the door, and "join this club" sent them back to a form
+ * that only tells them so. The session already carries every membership, so
+ * this costs a find, not a request.
+ */
+const useMyMembership = (slug: string) =>
+  useSession().memberships.find((m) => m.club?.slug === slug);
+
+/** Join, or go in. Same button, two different destinations. */
+function ClubCta({
+  club,
+  size,
+  className,
+}: {
+  club: PublicClub;
+  size?: "sm" | "md";
+  className?: string;
+}) {
+  const { t } = useT();
+  const mine = useMyMembership(club.slug);
+
+  return mine ? (
+    <Link
+      to="/app/$clubSlug"
+      params={{ clubSlug: club.slug }}
+      className={buttonClasses({ size, className })}
+    >
+      {t(
+        mine.status === "pending"
+          ? "public.cta.membershipPending"
+          : "public.cta.openClub",
+      )}
+    </Link>
+  ) : (
+    <Link
+      to="/app/join/$slug"
+      params={{ slug: club.slug }}
+      className={buttonClasses({ size, className })}
+    >
+      {t("public.cta.joinClub")}
+    </Link>
+  );
+}
+
 export default function PublicClubPage() {
   const { t } = useT();
   const { club, unclaimed, origin } = route.useLoaderData();
 
   const url = `${origin}/clubs/${club.slug}`;
   const listed = listedOf(useRoster());
+  const mine = useMyMembership(club.slug);
 
   return (
     <>
@@ -111,9 +159,12 @@ export default function PublicClubPage() {
       <PublicShell>
         <Outlet />
 
+        {/* Nothing to pitch to somebody who is already in: the band asks a
+            stranger to join, and the hero's button already offers a member the
+            way into the club itself. */}
         {unclaimed ? (
           <ClaimBand club={club} />
-        ) : (
+        ) : mine ? null : (
           <section className="wash wash-soft mt-10 flex flex-col items-center gap-3 rounded-sheet border border-hairline p-10 text-center">
             <h2 className={headlineClasses("display", "max-w-[24ch]")}>
               {t("public.publicClub.joinTitle", { name: club.name })}
@@ -122,15 +173,9 @@ export default function PublicClubPage() {
               {t("public.publicClub.joinBody")}
             </p>
             {/* The club's own invite link, which is public now — signed out
-                it previews the club and offers a sign-up that comes back to
-                it, so there is nothing to gate here. */}
-            <Link
-              to="/app/join/$slug"
-              params={{ slug: club.slug }}
-              className={buttonClasses({ className: "mt-2 px-6" })}
-            >
-              {t("public.cta.joinClub")}
-            </Link>
+                it previews the club and offers a sign-up that comes back to it,
+                so there is nothing to gate here. */}
+            <ClubCta club={club} className="mt-2 px-6" />
           </section>
         )}
       </PublicShell>
@@ -519,13 +564,7 @@ function ClubHero({
 
           <div className="flex shrink-0 items-center gap-2">
             <ShareButton title={club.name} url={url} />
-            <Link
-              to="/app/join/$slug"
-              params={{ slug: club.slug }}
-              className={buttonClasses({ size: "sm" })}
-            >
-              {t("public.cta.joinClub")}
-            </Link>
+            <ClubCta club={club} size="sm" />
           </div>
         </div>
       </div>

@@ -10,6 +10,7 @@ import { dayKeyOf, zoneOf } from "@/libs/algorithms/day";
 import { useNow } from "@/hooks/useNow";
 import {
   balanceDoubles,
+  byWait,
   pairKey,
   seatsNeeded,
   suggestGroups,
@@ -45,6 +46,10 @@ const NO_SEATS: number[] = [];
 /** Likewise, so a disabled caller gets the same empty array every render rather
  *  than a new one out of the memo. */
 const NO_GROUPS: Player[][] = [];
+const NO_WAITING: Player[] = [];
+/** One object too, for the same reason: a disabled caller destructures this
+ *  every render and a fresh `{}` would be a new `waiting` each time. */
+const NOTHING_TONIGHT = { waiting: NO_WAITING, groups: NO_GROUPS };
 
 export function useSuggestions({
   setup,
@@ -74,6 +79,16 @@ export function useSuggestions({
 }): {
   /** One per free table, in the same order: `groups[i]` is `freeTables[i]`'s. */
   groups: Player[][];
+  /**
+   * The queue itself: here, not at a table, longest wait first, after
+   * `exclude`.
+   *
+   * For the caller that needs to know how many are waiting and not only who was
+   * paired off. Winner-stays is the case — one person left over is no group at
+   * all, so it is the one answer `groups` cannot express, and the scoreboard
+   * reading it off `here` again would be a second copy of the sort.
+   */
+  waiting: Player[];
   freeTables: ClubTable[];
   /** The pair assigned to one particular table, or undefined if that table is
    *  busy or the room cannot fill it. The whole of what a table's own screen
@@ -128,16 +143,16 @@ export function useSuggestions({
    * `setup` is not a dependency: readTodaySetup() decodes a fresh object every
    * render, so it never compares equal. `seats` is what this actually uses.
    */
-  const groups = useMemo(() => {
-    if (!enabled) return NO_GROUPS;
+  const { waiting, groups } = useMemo(() => {
+    if (!enabled) return NOTHING_TONIGHT;
 
     // All four seats, so a doubles partner is not offered a table of their own.
     const busy = new Set((live ?? []).flatMap(seatsOf));
 
-    // Tonight's results, twice over: how many games each person has had, and
+    // Tonight's results, twice over: when each person last finished a game, and
     // who has already been on a table with whom. The first orders the waiting
     // list, the second keeps it from pairing the same two again.
-    const playedToday = new Map<number, number>();
+    const lastPlayed = new Map<number, number>();
     const metToday = new Set<string>();
 
     for (const game of gamesToday?.games ?? []) {
@@ -148,7 +163,9 @@ export function useSuggestions({
         game.player_2b_id,
       ].filter((id): id is number => id !== null);
 
-      for (const id of ids) playedToday.set(id, (playedToday.get(id) ?? 0) + 1);
+      const at = Date.parse(game.played_at);
+      for (const id of ids)
+        if (at > (lastPlayed.get(id) ?? 0)) lastPlayed.set(id, at);
       // Partners as well as opponents: they have had their game together either
       // way, and in doubles a repeated partner is as stale as a repeated one.
       for (let i = 0; i < ids.length; i++)
@@ -159,10 +176,13 @@ export function useSuggestions({
     /**
      * Here, and not at a table.
      *
-     * Fewest games tonight first, then longest checked in. Whoever has been
-     * sitting with a drink all evening is the answer to "who should have this
-     * table", and the person who has just filed their third is not — but it is
-     * a sort and not a filter: by ten o'clock everybody has played, and a
+     * Longest wait first, and a wait starts at whichever is later of arriving
+     * and finishing your last game — see `waitingSince` in
+     * libs/algorithms/today.ts. Whoever has been sitting with a drink the
+     * longest is the answer to "who should have this table", and the pair who
+     * have just filed a result are not.
+     *
+     * A sort and not a filter: by ten o'clock everybody has played, and a
      * suggestion nobody is offered is worse than one that repeats a pairing.
      *
      * Arriving is the whole of the queue this replaced, which is the point: it
@@ -176,11 +196,7 @@ export function useSuggestions({
       .filter((p) => !busy.has(p.id) && !skip.has(p.id) && p.is_device !== true)
       // A copy: filter already made one, but saying so keeps the sort off
       // whatever `here` is memoised from.
-      .sort(
-        (a, b) =>
-          (playedToday.get(a.id) ?? 0) - (playedToday.get(b.id) ?? 0) ||
-          (a.present_since ?? "").localeCompare(b.present_since ?? ""),
-      );
+      .sort(byWait(lastPlayed));
 
     // The queue decides which people are together; the divisions decide who
     // plays with whom. Balanced as the groups are formed, so the names shown
@@ -188,12 +204,14 @@ export function useSuggestions({
     // One group per free table — and at least one even when every table is
     // busy, because "who could be playing" is still worth showing the room
     // above a "no free table" of its own.
-    return suggestGroups(
+    const built = suggestGroups(
       idle,
       seats,
       (a, b) => metToday.has(pairKey(a, b)),
       Math.max(freeTables.length, 1),
     ).map((group) => (seats === 4 ? balanceDoubles(group) : group));
+
+    return { waiting: idle, groups: built };
   }, [enabled, live, gamesToday, here, exclude, seats, freeTables]);
 
   const canStart = (group: Player[]) =>
@@ -206,7 +224,7 @@ export function useSuggestions({
   const groupFor = (tableId: number) =>
     groups[freeTables.findIndex((table) => table.id === tableId)];
 
-  return { groups, freeTables, groupFor, canStart };
+  return { groups, waiting, freeTables, groupFor, canStart };
 }
 
 /** The seats a suggested group fills, in the order the row wants them. */

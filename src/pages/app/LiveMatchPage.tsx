@@ -7,7 +7,7 @@ import { usePlayers } from "@/hooks/usePlayers";
 import { useClubTables } from "@/hooks/useClubTables";
 import { useLiveMatch, useManageLiveMatch } from "@/hooks/useLiveMatch";
 import { seatsOfGroup, useSuggestions } from "@/hooks/useSuggestions";
-import { seatsOf } from "@/libs/algorithms/night";
+import { leaderOf, seatsOf } from "@/libs/algorithms/night";
 import { Card } from "@/components/ui/Card";
 import { readTodaySetup } from "@/libs/prefs";
 import { seatsNeeded } from "@/libs/algorithms/today";
@@ -22,6 +22,7 @@ import { useFullscreen } from "@/hooks/useFullscreen";
 import { readKioskTable } from "@/libs/browser/kiosk";
 import { LIVE_MATCH_KEYS, dbErrorMessage } from "@/libs/algorithms/dbError";
 import { useT } from "@/i18n";
+import type { Player } from "@/types";
 
 const route = getRouteApi("/app/_authed/$clubSlug/live/$liveId");
 
@@ -52,6 +53,17 @@ export default function LiveMatchPage() {
   const [freed, setFreed] = useState<{
     tableId: number;
     seats: number[];
+    /** The winner, in singles: the one person who may be offered this table
+     *  straight back, when the room cannot make a fresh pair for it. Null in
+     *  doubles, where the club said the table always goes back to the queue.
+     *
+     *  ponytail: state on this page and nowhere else, so a refresh or a "not
+     *  now" loses the hold and the table reads as free with nothing offered on
+     *  it — never as a *different* offer, because with one person idle every
+     *  other screen suggests nothing for it either. games.table_id, and
+     *  deriving the holder from the last game played there, is the upgrade if
+     *  losing it on a reload turns out to matter. */
+    stays: Player | null;
   } | null>(null);
   // The club's setting as it stands. Read, not owned: /night is where it is
   // changed, and a scoreboard arguing with it would be a second answer.
@@ -64,7 +76,7 @@ export default function LiveMatchPage() {
   // Asked for this table by name rather than "the first suggestion": with two
   // tables free the first suggestion belongs to whichever of them the club
   // lists first, and offering it here handed the same pair to two screens.
-  const { groupFor, canStart } = useSuggestions({
+  const { groupFor, canStart, waiting } = useSuggestions({
     setup,
     exclude: freed?.seats,
     enabled: freed !== null,
@@ -79,7 +91,16 @@ export default function LiveMatchPage() {
   // players were at the bar is a ghost row holding a table.
   if (freed !== null) {
     const table = (tables ?? []).find((tbl) => tbl.id === freed.tableId);
-    const group = groupFor(freed.tableId);
+    const paired = groupFor(freed.tableId);
+    // Two or more waiting and the night pairs them off, which is what `paired`
+    // is. Exactly one and there is no pair to make: the winner keeps the table
+    // rather than the room losing it while somebody stands next to it. A forced
+    // rematch can come out of that and is right — with one person waiting there
+    // is no other game to offer.
+    const winnerStays =
+      paired === undefined && freed.stays !== null && waiting.length === 1;
+    const group =
+      paired ?? (winnerStays ? [freed.stays!, waiting[0]] : undefined);
 
     // Nobody waiting, or the table is gone: there is nothing to offer and this
     // page has no match left to show.
@@ -104,6 +125,15 @@ export default function LiveMatchPage() {
             <div className="mt-3">
               <SuggestedGroup group={group} seats={seats} />
             </div>
+            {/* Said out loud, because it is the one suggestion that is not the
+                queue's answer: the winner is on this table because nobody else
+                could be paired for it, and the room should be able to see that
+                rather than wonder why they got another go. */}
+            {winnerStays && (
+              <p className="mt-2 text-caption text-ink-faint">
+                {t("live.winnerStays", { name: freed.stays!.name })}
+              </p>
+            )}
           </div>
 
           <div className="flex flex-wrap justify-end gap-3">
@@ -241,7 +271,19 @@ export default function LiveMatchPage() {
         // after every result is a table somebody has to come and restart, and on
         // a club night that is the difference between four matches and six.
         if (match.table_id !== null) {
-          setFreed({ tableId: match.table_id, seats: seatsOf(match) });
+          // Who may keep it, if nobody else can be paired off. Read from the
+          // row while it is still in hand — it is deleted by the time the
+          // suggestion is asked for. Doubles is out by the club's own rule:
+          // there, the table goes back to the queue whatever the result.
+          const side = leaderOf(match);
+          setFreed({
+            tableId: match.table_id,
+            seats: seatsOf(match),
+            stays:
+              (match.mode === "single" && side !== null
+                ? seat(side === 1 ? match.player_1_id : match.player_2_id)
+                : undefined) ?? null,
+          });
           return;
         }
         void navigate({ to: "/app/$clubSlug", params: { clubSlug } });
