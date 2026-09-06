@@ -34,6 +34,7 @@ import LeagueTable from "@/components/tournaments/LeagueTable";
 import MatchCard from "@/components/games/MatchCard";
 import MatchList from "@/components/games/MatchList";
 import TournamentPodium from "@/components/tournaments/TournamentPodium";
+import ShareCardButton from "@/components/social/ShareCardButton";
 import SocialBar from "@/components/social/SocialBar";
 import TournamentAdminPanel from "@/components/tournaments/TournamentAdminPanel";
 import PlayGameForm from "@/components/games/PlayGameForm";
@@ -283,7 +284,18 @@ export default function TournamentPage() {
             then the story of how it got there, not the headline. */}
         {tournament.status === "done" && podium && (
           <Card className="overflow-hidden">
-            <CardHeader title={t("tournaments.results")} />
+            <CardHeader
+              title={t("tournaments.results")}
+              /* The result is worth more to the club in its WhatsApp group
+                 than on this page, and this is the moment it exists. */
+              action={
+                <ShareCardButton
+                  url={`/api/og/tournaments/${tournament.id}.png`}
+                  fileName={`${tournament.name}.png`}
+                  title={tournament.name}
+                />
+              }
+            />
             <TournamentPodium places={podium} byId={byId} />
             {/* Same target as the feed card's bar, so it is one thread seen
                 from two places rather than two threads. */}

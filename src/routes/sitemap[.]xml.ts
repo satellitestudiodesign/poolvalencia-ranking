@@ -18,6 +18,13 @@ import { DRILLS_ENABLED } from "@/libs/algorithms/features";
  * of URLs a stranger can open, so it must be built by something that can only
  * see what a stranger sees. No club-owned drills, for the same reason.
  *
+ * Not the per-result pages under /clubs/:slug/game/:id. There is one for every
+ * frame every club has ever filed — tens of thousands and growing daily, each a
+ * scoreline between two people — and a sitemap that is 95% of those buries the
+ * clubs, players and tournaments a crawler should actually be spending its
+ * budget on. They stay linked from each club's results tab, which is how a
+ * crawler finds the ones worth having.
+ *
  * The players query filters is_public even though the policy does not: an
  * unlisted profile is still reachable (a name in a result links to it), it is
  * just never advertised, and a sitemap is the most explicit advertising there is.

@@ -69,7 +69,17 @@ export const Route = createFileRoute("/_public/tournaments/$tournamentId")({
           .join(" "),
         path,
         origin,
-        image: tournament.club?.logo_url,
+        // Never the club's logo_url — that column holds a data: URI, which
+        // publicMeta drops and no crawler would fetch anyway. This route hands
+        // back the podium card once a member's browser has drawn one, and the
+        // app's default card until then.
+        // `v` is a cache-buster, not a parameter the route reads — see the club
+        // route for why. A tournament's card is the default one until it
+        // finishes and a podium exists, so its status is what has to change.
+        image: `/api/og/tournaments/${tournament.id}.png?v=${tournament.status}`,
+        // 1200x630, whether it is the podium card or the default one the route
+        // falls back to. Without this the card previews as a thumbnail.
+        wideImage: true,
         fallback: "tournaments",
       }),
       links: canonical(path, origin),

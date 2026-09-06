@@ -56,7 +56,12 @@ export const Route = createFileRoute("/_public/players/$playerSlug")({
           : `${person.name}: historial, porcentaje de victorias y últimas partidas.`,
         path,
         origin,
-        image: person.avatar_url,
+        // Their own card — face, clubs, record — drawn on demand. Never
+        // person.avatar_url: an uploaded one is a data: URI, which publicMeta
+        // drops and no crawler would fetch. `v` is a cache-buster, not a
+        // parameter the route reads: see the club route for why.
+        image: `/api/og/players/${person.slug}.png?v=${person.memberships.length}`,
+        wideImage: true,
         fallback: "players",
       }),
       links: canonical(path, origin),

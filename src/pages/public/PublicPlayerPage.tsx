@@ -5,6 +5,7 @@ import { Link, getRouteApi } from "@tanstack/react-router";
 import PublicShell from "@/components/layout/PublicShell";
 import GamesList from "@/components/games/GamesList";
 import ShareButton from "@/components/social/ShareButton";
+import ShareCardButton from "@/components/social/ShareCardButton";
 import { Avatar } from "@/components/ui/Avatar";
 import { Card, CardHeader } from "@/components/ui/Card";
 import { EmptyState } from "@/components/ui/EmptyState";
@@ -286,6 +287,13 @@ function PlayerHero({
             </div>
           </div>
           <div className="flex shrink-0 items-center gap-2">
+            {/* The picture and the link are two different things to hand
+                somebody — one goes in a story, the other in a message. */}
+            <ShareCardButton
+              url={`/api/og/players/${person.slug}.png`}
+              fileName={`${person.slug}.png`}
+              title={person.name}
+            />
             <ShareButton title={person.name} url={url} />
           </div>
         </div>

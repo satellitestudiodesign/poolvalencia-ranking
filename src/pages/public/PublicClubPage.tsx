@@ -6,6 +6,7 @@ import { Link, Outlet, getRouteApi } from "@tanstack/react-router";
 import { LuMapPin, LuX } from "react-icons/lu";
 import GamesList from "@/components/games/GamesList";
 import ShareButton from "@/components/social/ShareButton";
+import ShareCardButton from "@/components/social/ShareCardButton";
 import PublicShell from "@/components/layout/PublicShell";
 import { GROUPS, TournamentCard } from "@/pages/public/PublicTournamentsPage";
 import { Avatar } from "@/components/ui/Avatar";
@@ -435,7 +436,13 @@ export function ClubGamesTab() {
     <Card className="mt-8 overflow-hidden">
       <CardHeader title={t("public.publicClub.recentResults")} />
       <div className="p-3">
-        <GamesList games={data.games} players={roster} showDates public />
+        <GamesList
+          games={data.games}
+          players={roster}
+          showDates
+          public
+          clubSlug={club.slug}
+        />
       </div>
     </Card>
   );
@@ -563,6 +570,13 @@ function ClubHero({
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
+            {/* The picture and the link are two different things to hand
+                somebody — one goes in a story, the other in a message. */}
+            <ShareCardButton
+              url={`/api/og/clubs/${club.slug}`}
+              fileName={`${club.slug}.png`}
+              title={club.name}
+            />
             <ShareButton title={club.name} url={url} />
             <ClubCta club={club} size="sm" />
           </div>
