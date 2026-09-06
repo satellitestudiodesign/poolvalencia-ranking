@@ -435,7 +435,13 @@ export function ClubGamesTab() {
     <Card className="mt-8 overflow-hidden">
       <CardHeader title={t("public.publicClub.recentResults")} />
       <div className="p-3">
-        <GamesList games={data.games} players={roster} showDates public />
+        <GamesList
+          games={data.games}
+          players={roster}
+          showDates
+          public
+          clubSlug={club.slug}
+        />
       </div>
     </Card>
   );

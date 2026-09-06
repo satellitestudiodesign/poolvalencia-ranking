@@ -103,6 +103,9 @@ interface GamesListProps {
    * business, and anon cannot read either table.
    */
   public?: boolean;
+  /** The club's slug, on the public side only: with it every row links to the
+   *  result's own page, without it the tape stays a list of plain facts. */
+  clubSlug?: string;
   /**
    * Show the way in to correcting a result. The club admin's, and off
    * everywhere else — a tape on a player's page or a wall display is something
@@ -130,6 +133,7 @@ export default function GamesList({
   showSocial = true,
   stickyDates = false,
   public: isPublic = false,
+  clubSlug,
   admin = false,
 }: GamesListProps) {
   const { t, locale } = useT();
@@ -221,9 +225,19 @@ export default function GamesList({
                 {/* The row is the tap, and it covers the row rather than
                     wrapping it: the pencil is a link too, and a link inside a
                     link is not a thing. Anything that must stay clickable sits
-                    above this on the z axis. Off on the public tape, which has
-                    no page for a result to open. */}
-                {!isPublic && (
+                    above this on the z axis. Two destinations, because the
+                    result has a page on each side: the editor inside the club,
+                    the public one out here. */}
+                {isPublic ? (
+                  clubSlug && (
+                    <Link
+                      to="/clubs/$slug/game/$gameId"
+                      params={{ slug: clubSlug, gameId: id }}
+                      aria-label={t("games.openResult")}
+                      className="absolute inset-0 rounded-control"
+                    />
+                  )
+                ) : (
                   <AppLink
                     to="/app/$clubSlug/games/$gameId"
                     params={{ gameId: id }}

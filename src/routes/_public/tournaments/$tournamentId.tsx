@@ -69,7 +69,11 @@ export const Route = createFileRoute("/_public/tournaments/$tournamentId")({
           .join(" "),
         path,
         origin,
-        image: tournament.club?.logo_url,
+        // Never the club's logo_url — that column holds a data: URI, which
+        // publicMeta drops and no crawler would fetch anyway. This route hands
+        // back the podium card once a member's browser has drawn one, and the
+        // app's default card until then.
+        image: `/api/og/tournaments/${tournament.id}.png`,
         fallback: "tournaments",
       }),
       links: canonical(path, origin),

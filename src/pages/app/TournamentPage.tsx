@@ -34,6 +34,8 @@ import LeagueTable from "@/components/tournaments/LeagueTable";
 import MatchCard from "@/components/games/MatchCard";
 import MatchList from "@/components/games/MatchList";
 import TournamentPodium from "@/components/tournaments/TournamentPodium";
+import ShareResultButton from "@/components/tournaments/ShareResultButton";
+import OgCardWriter from "@/components/tournaments/OgCardWriter";
 import SocialBar from "@/components/social/SocialBar";
 import TournamentAdminPanel from "@/components/tournaments/TournamentAdminPanel";
 import PlayGameForm from "@/components/games/PlayGameForm";
@@ -62,7 +64,7 @@ export default function TournamentPage() {
   const { tournamentId: tournamentIdParam } = route.useParams();
   const tournamentId = Number(tournamentIdParam);
 
-  const { player, activeClubId, isClubAdmin, isMember } = useAuth();
+  const { player, activeClub, activeClubId, isClubAdmin, isMember } = useAuth();
   const { data: tournament, isLoading } = useTournament(tournamentId);
   const { data: players } = usePlayers();
   const { byId, nameOf } = usePlayerLookup();
@@ -283,8 +285,32 @@ export default function TournamentPage() {
             then the story of how it got there, not the headline. */}
         {tournament.status === "done" && podium && (
           <Card className="overflow-hidden">
-            <CardHeader title={t("tournaments.results")} />
+            <CardHeader
+              title={t("tournaments.results")}
+              /* The result is worth more to the club in its WhatsApp group
+                 than on this page, and this is the moment it exists. */
+              action={
+                <ShareResultButton
+                  club={activeClub}
+                  title={tournament.name}
+                  subtitle={when}
+                  places={podium}
+                  nameOf={nameOf}
+                />
+              }
+            />
             <TournamentPodium places={podium} byId={byId} />
+            {/* No UI: this is what makes a shared link preview the podium
+                rather than the app's default card. */}
+            <OgCardWriter
+              tournamentId={tournament.id}
+              club={activeClub}
+              canWrite={isClubAdmin}
+              title={tournament.name}
+              subtitle={when}
+              places={podium}
+              nameOf={nameOf}
+            />
             {/* Same target as the feed card's bar, so it is one thread seen
                 from two places rather than two threads. */}
             <div className="px-4 pb-3">
