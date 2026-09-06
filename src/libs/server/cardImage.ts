@@ -111,24 +111,25 @@ async function decodeImage(bytes: Buffer): Promise<CardImage | null> {
 }
 
 /**
- * Draw at twice the card's nominal size, and serve it that way.
+ * Draw the card at its nominal size, and serve it that way.
  *
- * pureimage antialiases with a single sample: a glyph edge gets one blended
- * pixel and nothing else, which on a curve reads as a staircase — and at
- * 1200x630 there are not enough pixels to hide it. Doubling the resolution puts
- * four device pixels where one was, and every consumer of an og:image scales it
- * down to its own box, doing the averaging with a far better filter than
- * anything worth writing here. It is also what makes the card sharp when
- * somebody opens the picture itself on a retina screen.
+ * This was 2 — pureimage antialiases with a single sample, so a glyph edge gets
+ * one blended pixel and nothing else, and doubling the resolution hid the
+ * staircase that leaves on a curve. It also cost four times the pixels, and
+ * pureimage rasterises in plain JavaScript on a Lambda vCPU: the club card,
+ * whose cover photograph and scrim are two full-frame passes, took thirteen
+ * seconds to draw at 2400x1260 and twenty at the square size. Slack's image
+ * proxy gives up long before either, so the card that was sharper was also the
+ * card nobody saw.
  *
- * The declared og:image size stays 1200x630 — see libs/algorithms/publicMeta.ts.
- * That tag is read as the aspect ratio a renderer should reserve, and 2:1 of
- * the same ratio lays out identically.
+ * A preview is displayed at about 600px wide, where the single-sample edges are
+ * invisible anyway. The cost is only paid by somebody who opens the picture
+ * itself, and a card that arrives beats a card that is crisp.
  */
-const SCALE = 2;
+const SCALE = 1;
 
-/** High enough that the type has no visible ringing at 2x, low enough that a
- *  photographed room lands in a couple of hundred kB. */
+/** High enough that the type has no visible ringing, low enough that a
+ *  photographed room lands well under a hundred kB. */
 const JPEG_QUALITY = 82;
 
 export type CardFormat = "png" | "jpeg";
@@ -175,9 +176,9 @@ const imagesOf = (urls: (string | null | undefined)[]) =>
  * Canvas in, image bytes out. Every card is drawn at SCALE and encoded as-is.
  *
  * PNG for flat artwork — type on felt, which is what most of a card is — and
- * JPEG where a photograph fills the frame, because a 2400px room in PNG is
- * 1.4MB and the same room at quality 82 is a tenth of that. A link preview that
- * takes a second to arrive is a link preview nobody sees.
+ * JPEG where a photograph fills the frame, because a room in PNG is several
+ * hundred kB and the same room at quality 82 is a fraction of that. A link
+ * preview that takes a second to arrive is a link preview nobody sees.
  */
 async function encode(
   size: CardSize,

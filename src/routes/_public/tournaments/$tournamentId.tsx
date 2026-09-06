@@ -3,33 +3,14 @@ import PublicTournamentPage from "@/pages/public/PublicTournamentPage";
 import { publicClubRosterQuery } from "@/queries/public/clubs";
 import { publicTournamentQuery } from "@/queries/public/tournaments";
 import { publicMeta, canonical } from "@/libs/algorithms/publicMeta";
-import type { TournamentFormat, TournamentStatus } from "@/types";
-
-/**
- * Prose, not the i18n key. FORMAT_KEY maps the column onto "doubleElim" for
- * `t()`, which is the wrong shape for a sentence, and `head` cannot call `t()`
- * anyway — it runs outside React.
- *
- * Which is the honest limit of this file: link previews are Spanish — the app's
- * default language — whatever the visitor's language is. Localising them means
- * reaching the dictionary from outside the provider, and a crawler's
- * Accept-Language is not the reader's.
- */
-const FORMAT_PROSE: Record<TournamentFormat, string> = {
-  double_elim: "doble eliminación",
-  league: "liga",
-  group_knockout: "grupos y eliminatoria",
-};
-
-/** The entrant count was here instead, and a card cached by a chat app the day
- *  entries opened kept claiming "4 entrants" for the rest of the tournament.
- *  Status goes stale too, but only once per phase and in the safe direction. */
-const STATUS_PROSE: Record<TournamentStatus, string> = {
-  open: "Inscripciones abiertas",
-  groups: "Fase de grupos en juego",
-  running: "En juego",
-  done: "Finalizado",
-};
+// Shared with the card route this page's og:image points at, so the sentence
+// and the picture cannot disagree about what phase the tournament is in.
+//
+// The entrant count was in the description instead of the status, and a card
+// cached by a chat app the day entries opened kept claiming "4 entrants" for
+// the rest of the tournament. Status goes stale too, but only once per phase
+// and in the safe direction.
+import { FORMAT_PROSE, STATUS_PROSE } from "@/libs/algorithms/tournamentProse";
 
 export const Route = createFileRoute("/_public/tournaments/$tournamentId")({
   loader: async ({ context, params }) => {

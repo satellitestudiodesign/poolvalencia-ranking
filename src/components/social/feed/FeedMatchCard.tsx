@@ -4,6 +4,7 @@ import { timeOf } from "@/libs/algorithms/dayLabel";
 import type { Game, Tournament } from "@/types";
 import { useT } from "@/i18n";
 import { AppLink } from "@/components/layout/AppLink";
+import { usePlayerLookup } from "@/hooks/usePlayers";
 import Side from "./Side";
 
 export default function FeedMatchCard({
@@ -19,6 +20,14 @@ export default function FeedMatchCard({
   detail?: boolean;
 }) {
   const { t, locale } = useT();
+  // The club's roster: a game carries ids, and the faces and names come from
+  // here. Side takes the people rather than the ids, because out on the public
+  // side they come from a different roster.
+  const { byId } = usePlayerLookup();
+  const teamOf = (ids: (number | null | undefined)[]) =>
+    ids
+      .map((id) => (id == null ? undefined : byId.get(id)))
+      .filter((player) => !!player);
 
   const isDoubles = game.mode === "doubles";
   const p1 = game.player_1_score;
@@ -71,7 +80,10 @@ export default function FeedMatchCard({
           winner reads as weight rather than as a colour. */}
       <div className="mt-3 flex items-center gap-3">
         <Side
-          ids={[game.player_1_id, isDoubles ? game.player_1b_id : undefined]}
+          people={teamOf([
+            game.player_1_id,
+            isDoubles ? game.player_1b_id : undefined,
+          ])}
           won={p1 > p2}
         />
         {/* h-12 self-start puts the score on the avatars' centre line, not on
@@ -82,7 +94,10 @@ export default function FeedMatchCard({
           <span className={p2 > p1 ? "text-ink" : "text-ink-faint"}>{p2}</span>
         </span>
         <Side
-          ids={[game.player_2_id, isDoubles ? game.player_2b_id : undefined]}
+          people={teamOf([
+            game.player_2_id,
+            isDoubles ? game.player_2b_id : undefined,
+          ])}
           won={p2 > p1}
         />
       </div>

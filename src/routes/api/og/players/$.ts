@@ -44,16 +44,18 @@ const listed = (names: string[]) =>
 const sizeOf = (url: string): "square" | "wide" =>
   new URL(url).searchParams.get("size") === "square" ? "square" : "wide";
 
-export const Route = createFileRoute("/api/og/players/$slug.png")({
+export const Route = createFileRoute("/api/og/players/$")({
   server: {
     handlers: {
       GET: async ({ params, request }) => {
         const fallback = () =>
           Response.redirect(new URL("/og/default.png", request.url), 302);
 
-        // The router names the param after the whole segment; the slug is the
-        // part before the extension.
-        const slug = String(params["slug.png"] ?? "").replace(/\.png$/, "");
+        // A splat rather than `$slug.png`: the router would name that param
+        // after the whole segment, extension included, and warn on every boot
+        // that "slug.png" is not an identifier. The URL is the same either way,
+        // and the slug is the splat with the extension taken off.
+        const slug = String(params._splat ?? "").replace(/\.png$/, "");
         if (!slug) return fallback();
 
         try {

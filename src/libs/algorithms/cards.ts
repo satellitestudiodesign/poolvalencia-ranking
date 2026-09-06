@@ -17,10 +17,17 @@ import { slugify } from "./slug";
  */
 export type CardStep = { rank: number; name: string };
 
-/** A club, as a link preview: who they are and how many of them there are. */
+/** A club, as a link preview: who they are and how many of them there are.
+ *
+ *  Also what a tournament that has no podium yet is drawn as — a heading, a
+ *  date and a line of standing is the same shape, and the alternative was a
+ *  fourth painter for three words of text. See the og/tournaments route. */
 export type ClubCardSpec = {
   /** The club's own name is the headline here, not the byline. */
   title: string;
+  /** The byline over the title. Empty on a club's own card, where the club is
+   *  the title; the club's name on a tournament drawn in this layout. */
+  club?: string;
   /** Where it is — "Valencia, España" — or empty for a club that has not said. */
   subtitle: string;
   /** "21 jugadores", already pluralised and translated by the caller: this
@@ -102,17 +109,22 @@ export function clubCardSpec({
   name,
   place,
   stat,
+  club,
 }: {
   name: string;
   /** City and country, however much of either is known. */
   place: string | null;
   stat: string;
+  /** Only for a tournament borrowing this layout — a club's own card has no
+   *  byline, because its name is already the headline. */
+  club?: string;
 }): ClubCardSpec {
   return {
     title: name,
     subtitle: place ?? "",
     stat,
-    fileName: `${slugify(name)}.png`,
+    club,
+    fileName: `${slugify(club ? `${club}-${name}` : name)}.png`,
   };
 }
 
@@ -207,10 +219,28 @@ export function podiumOrder(steps: CardStep[]): number[] {
  *  `ctx.measureText(s).width`; the test supplies one character = one unit. */
 export type Measure = (text: string) => number;
 
+/**
+ * The spaces Intl reaches for that the card's fonts do not have.
+ *
+ * `formatRange` joins a date range with THIN SPACE, EN DASH, THIN SPACE, and
+ * the vendored .ttf files the server draws with carry no glyph for U+2009 —
+ * pureimage draws .notdef, so "21 de septiembre – 21 de diciembre" arrived in
+ * a chat app as two empty boxes around the dash. Flattened to an ordinary
+ * space here rather than in eventDates, which is also read by the DOM, where
+ * the typographer's space is right and renders.
+ *
+ * Applied in fitText, which every piece of free text on a card passes through —
+ * wrapText splits on \s and rejoins with ordinary spaces, so it is already
+ * safe, and its last line comes back through here anyway.
+ */
+const plainSpaces = (text: string) =>
+  text.replace(/[\u2009\u202f\u2007]/g, " ");
+
 /** One line, shortened with an ellipsis until it fits. A name too long for the
  *  card is cut rather than shrunk: two type sizes on one podium read as a
  *  mistake. */
-export function fitText(text: string, max: number, measure: Measure): string {
+export function fitText(raw: string, max: number, measure: Measure): string {
+  const text = plainSpaces(raw);
   if (measure(text) <= max) return text;
   let cut = text;
   while (cut.length > 1 && measure(`${cut}…`) > max) cut = cut.slice(0, -1);

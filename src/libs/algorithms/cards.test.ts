@@ -122,6 +122,32 @@ describe("clubCardSpec", () => {
 
     expect(spec.fileName).toBe("club-de-billar-paula.png");
     expect(spec.subtitle).toBe("");
+    expect(spec.club).toBeUndefined();
+  });
+
+  it("takes a byline when a tournament borrows the layout", () => {
+    const spec = clubCardSpec({
+      name: "Liga 2ª – Otoño 2026",
+      place: "21 de septiembre de 2026",
+      stat: "Inscripciones abiertas",
+      club: "PoolValencia",
+    });
+
+    expect(spec.club).toBe("PoolValencia");
+    // Both names in the file, so two clubs' leagues do not save over each other.
+    expect(spec.fileName).toBe("poolvalencia-liga-2-otono-2026.png");
+  });
+});
+
+describe("fitText", () => {
+  it("flattens the thin spaces Intl puts in a date range", () => {
+    // What formatRange returns: THIN SPACE, EN DASH, THIN SPACE. The card's
+    // fonts have no glyph for U+2009 and drew an empty box for each one.
+    const range = "21 de septiembre\u2009\u2013\u200921 de diciembre";
+
+    expect(fitText(range, 999, mono)).toBe(
+      "21 de septiembre – 21 de diciembre",
+    );
   });
 });
 

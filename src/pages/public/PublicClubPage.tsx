@@ -2,11 +2,10 @@ import { useState } from "react";
 import { toast } from "react-toastify";
 import { headlineClasses } from "@/components/layout/publicTitleStyles";
 import { useMutation, useQuery, useSuspenseQuery } from "@tanstack/react-query";
-import { Link, Outlet, getRouteApi } from "@tanstack/react-router";
+import { Link, Outlet, getRouteApi, useLocation } from "@tanstack/react-router";
 import { LuMapPin, LuX } from "react-icons/lu";
 import GamesList from "@/components/games/GamesList";
 import ShareButton from "@/components/social/ShareButton";
-import ShareCardButton from "@/components/social/ShareCardButton";
 import PublicShell from "@/components/layout/PublicShell";
 import { GROUPS, TournamentCard } from "@/pages/public/PublicTournamentsPage";
 import { Avatar } from "@/components/ui/Avatar";
@@ -263,9 +262,16 @@ const TABS = [
 
 const TAB =
   "shrink-0 border-b-2 px-1 py-3 text-body transition-colors duration-150";
+const TAB_ON = `${TAB} border-strike font-medium text-ink`;
+const TAB_OFF = `${TAB} border-transparent text-ink-soft hover:text-ink`;
 
 function ClubTabs({ slug }: { slug: string }) {
   const { t } = useT();
+  // One result lives at /clubs/$slug/game/$gameId — a sibling of the tape
+  // rather than a child of it, so the router does not count it as the games
+  // tab even though that is the tab it was reached from and belongs under.
+  const { pathname } = useLocation();
+  const onResult = pathname.startsWith(`/clubs/${slug}/game/`);
 
   return (
     // The scroller is for a narrow phone: four labels in three languages do not
@@ -282,12 +288,9 @@ function ClubTabs({ slug }: { slug: string }) {
           // Without `exact` the tournaments tab, whose path is a prefix of the
           // other three, would light up on all four.
           activeOptions={{ exact: "exact" in tab }}
-          activeProps={{
-            className: `${TAB} border-strike font-medium text-ink`,
-            "aria-current": "page",
-          }}
+          activeProps={{ className: TAB_ON, "aria-current": "page" }}
           inactiveProps={{
-            className: `${TAB} border-transparent text-ink-soft hover:text-ink`,
+            className: onResult && tab.to.endsWith("/games") ? TAB_ON : TAB_OFF,
           }}
         >
           {t(tab.labelKey)}
@@ -441,7 +444,7 @@ export function ClubGamesTab() {
           players={roster}
           showDates
           public
-          clubSlug={club.slug}
+          clubSlugOf={() => club.slug}
         />
       </div>
     </Card>
@@ -570,13 +573,8 @@ function ClubHero({
           </div>
 
           <div className="flex shrink-0 items-center gap-2">
-            {/* The picture and the link are two different things to hand
-                somebody — one goes in a story, the other in a message. */}
-            <ShareCardButton
-              url={`/api/og/clubs/${club.slug}`}
-              fileName={`${club.slug}.png`}
-              title={club.name}
-            />
+            {/* The link carries the picture with it: what it unfurls to in a
+                chat is the card drawn by /api/og/clubs. */}
             <ShareButton title={club.name} url={url} />
             <ClubCta club={club} size="sm" />
           </div>

@@ -47,9 +47,9 @@ import { Route as PublicClubsSlugInfoRouteImport } from './routes/_public/clubs/
 import { Route as PublicClubsSlugPlayersRouteImport } from './routes/_public/clubs/$slug/players'
 import { Route as ApiClubsSlugLogoRouteImport } from './routes/api/clubs/$slug/logo'
 import { Route as ApiOgClubsSlugRouteImport } from './routes/api/og/clubs/$slug'
-import { Route as ApiOgGamesGameIdDotpngRouteImport } from './routes/api/og/games/$gameId[.]png'
-import { Route as ApiOgPlayersSlugDotpngRouteImport } from './routes/api/og/players/$slug[.]png'
-import { Route as ApiOgTournamentsTournamentIdDotpngRouteImport } from './routes/api/og/tournaments/$tournamentId[.]png'
+import { Route as ApiOgGamesSplatRouteImport } from './routes/api/og/games/$'
+import { Route as ApiOgPlayersSplatRouteImport } from './routes/api/og/players/$'
+import { Route as ApiOgTournamentsSplatRouteImport } from './routes/api/og/tournaments/$'
 import { Route as AppAuthedClubSlugIndexRouteImport } from './routes/app/_authed/$clubSlug/index'
 import { Route as AppAuthedClubSlugChallengesRouteImport } from './routes/app/_authed/$clubSlug/challenges'
 import { Route as AppAuthedClubSlugClubRouteRouteImport } from './routes/app/_authed/$clubSlug/club/route'
@@ -277,22 +277,21 @@ const ApiOgClubsSlugRoute = ApiOgClubsSlugRouteImport.update({
   path: '/api/og/clubs/$slug',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOgGamesGameIdDotpngRoute = ApiOgGamesGameIdDotpngRouteImport.update({
-  id: '/api/og/games/$gameId.png',
-  path: '/api/og/games/$gameId.png',
+const ApiOgGamesSplatRoute = ApiOgGamesSplatRouteImport.update({
+  id: '/api/og/games/$',
+  path: '/api/og/games/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOgPlayersSlugDotpngRoute = ApiOgPlayersSlugDotpngRouteImport.update({
-  id: '/api/og/players/$slug.png',
-  path: '/api/og/players/$slug.png',
+const ApiOgPlayersSplatRoute = ApiOgPlayersSplatRouteImport.update({
+  id: '/api/og/players/$',
+  path: '/api/og/players/$',
   getParentRoute: () => rootRouteImport,
 } as any)
-const ApiOgTournamentsTournamentIdDotpngRoute =
-  ApiOgTournamentsTournamentIdDotpngRouteImport.update({
-    id: '/api/og/tournaments/$tournamentId.png',
-    path: '/api/og/tournaments/$tournamentId.png',
-    getParentRoute: () => rootRouteImport,
-  } as any)
+const ApiOgTournamentsSplatRoute = ApiOgTournamentsSplatRouteImport.update({
+  id: '/api/og/tournaments/$',
+  path: '/api/og/tournaments/$',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AppAuthedClubSlugIndexRoute = AppAuthedClubSlugIndexRouteImport.update({
   id: '/',
   path: '/',
@@ -542,9 +541,9 @@ export interface FileRoutesByFullPath {
   '/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
   '/api/og/clubs/$slug': typeof ApiOgClubsSlugRoute
-  '/api/og/games/$gameId.png': typeof ApiOgGamesGameIdDotpngRoute
-  '/api/og/players/$slug.png': typeof ApiOgPlayersSlugDotpngRoute
-  '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
+  '/api/og/games/$': typeof ApiOgGamesSplatRoute
+  '/api/og/players/$': typeof ApiOgPlayersSplatRoute
+  '/api/og/tournaments/$': typeof ApiOgTournamentsSplatRoute
   '/app/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
   '/app/$clubSlug/today': typeof AppAuthedClubSlugTodayRoute
@@ -615,9 +614,9 @@ export interface FileRoutesByTo {
   '/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
   '/api/og/clubs/$slug': typeof ApiOgClubsSlugRoute
-  '/api/og/games/$gameId.png': typeof ApiOgGamesGameIdDotpngRoute
-  '/api/og/players/$slug.png': typeof ApiOgPlayersSlugDotpngRoute
-  '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
+  '/api/og/games/$': typeof ApiOgGamesSplatRoute
+  '/api/og/players/$': typeof ApiOgPlayersSplatRoute
+  '/api/og/tournaments/$': typeof ApiOgTournamentsSplatRoute
   '/app/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
   '/app/$clubSlug/today': typeof AppAuthedClubSlugTodayRoute
@@ -695,9 +694,9 @@ export interface FileRoutesById {
   '/_public/clubs/$slug/players': typeof PublicClubsSlugPlayersRoute
   '/api/clubs/$slug/logo': typeof ApiClubsSlugLogoRoute
   '/api/og/clubs/$slug': typeof ApiOgClubsSlugRoute
-  '/api/og/games/$gameId.png': typeof ApiOgGamesGameIdDotpngRoute
-  '/api/og/players/$slug.png': typeof ApiOgPlayersSlugDotpngRoute
-  '/api/og/tournaments/$tournamentId.png': typeof ApiOgTournamentsTournamentIdDotpngRoute
+  '/api/og/games/$': typeof ApiOgGamesSplatRoute
+  '/api/og/players/$': typeof ApiOgPlayersSplatRoute
+  '/api/og/tournaments/$': typeof ApiOgTournamentsSplatRoute
   '/app/_authed/$clubSlug/challenges': typeof AppAuthedClubSlugChallengesRoute
   '/app/_authed/$clubSlug/night': typeof AppAuthedClubSlugNightRoute
   '/app/_authed/$clubSlug/today': typeof AppAuthedClubSlugTodayRoute
@@ -774,9 +773,9 @@ export interface FileRouteTypes {
     | '/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
     | '/api/og/clubs/$slug'
-    | '/api/og/games/$gameId.png'
-    | '/api/og/players/$slug.png'
-    | '/api/og/tournaments/$tournamentId.png'
+    | '/api/og/games/$'
+    | '/api/og/players/$'
+    | '/api/og/tournaments/$'
     | '/app/$clubSlug/challenges'
     | '/app/$clubSlug/night'
     | '/app/$clubSlug/today'
@@ -847,9 +846,9 @@ export interface FileRouteTypes {
     | '/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
     | '/api/og/clubs/$slug'
-    | '/api/og/games/$gameId.png'
-    | '/api/og/players/$slug.png'
-    | '/api/og/tournaments/$tournamentId.png'
+    | '/api/og/games/$'
+    | '/api/og/players/$'
+    | '/api/og/tournaments/$'
     | '/app/$clubSlug/challenges'
     | '/app/$clubSlug/night'
     | '/app/$clubSlug/today'
@@ -926,9 +925,9 @@ export interface FileRouteTypes {
     | '/_public/clubs/$slug/players'
     | '/api/clubs/$slug/logo'
     | '/api/og/clubs/$slug'
-    | '/api/og/games/$gameId.png'
-    | '/api/og/players/$slug.png'
-    | '/api/og/tournaments/$tournamentId.png'
+    | '/api/og/games/$'
+    | '/api/og/players/$'
+    | '/api/og/tournaments/$'
     | '/app/_authed/$clubSlug/challenges'
     | '/app/_authed/$clubSlug/night'
     | '/app/_authed/$clubSlug/today'
@@ -975,9 +974,9 @@ export interface RootRouteChildren {
   AuthCallbackRoute: typeof AuthCallbackRoute
   ApiClubsSlugLogoRoute: typeof ApiClubsSlugLogoRoute
   ApiOgClubsSlugRoute: typeof ApiOgClubsSlugRoute
-  ApiOgGamesGameIdDotpngRoute: typeof ApiOgGamesGameIdDotpngRoute
-  ApiOgPlayersSlugDotpngRoute: typeof ApiOgPlayersSlugDotpngRoute
-  ApiOgTournamentsTournamentIdDotpngRoute: typeof ApiOgTournamentsTournamentIdDotpngRoute
+  ApiOgGamesSplatRoute: typeof ApiOgGamesSplatRoute
+  ApiOgPlayersSplatRoute: typeof ApiOgPlayersSplatRoute
+  ApiOgTournamentsSplatRoute: typeof ApiOgTournamentsSplatRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -1248,25 +1247,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ApiOgClubsSlugRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/og/games/$gameId.png': {
-      id: '/api/og/games/$gameId.png'
-      path: '/api/og/games/$gameId.png'
-      fullPath: '/api/og/games/$gameId.png'
-      preLoaderRoute: typeof ApiOgGamesGameIdDotpngRouteImport
+    '/api/og/games/$': {
+      id: '/api/og/games/$'
+      path: '/api/og/games/$'
+      fullPath: '/api/og/games/$'
+      preLoaderRoute: typeof ApiOgGamesSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/og/players/$slug.png': {
-      id: '/api/og/players/$slug.png'
-      path: '/api/og/players/$slug.png'
-      fullPath: '/api/og/players/$slug.png'
-      preLoaderRoute: typeof ApiOgPlayersSlugDotpngRouteImport
+    '/api/og/players/$': {
+      id: '/api/og/players/$'
+      path: '/api/og/players/$'
+      fullPath: '/api/og/players/$'
+      preLoaderRoute: typeof ApiOgPlayersSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
-    '/api/og/tournaments/$tournamentId.png': {
-      id: '/api/og/tournaments/$tournamentId.png'
-      path: '/api/og/tournaments/$tournamentId.png'
-      fullPath: '/api/og/tournaments/$tournamentId.png'
-      preLoaderRoute: typeof ApiOgTournamentsTournamentIdDotpngRouteImport
+    '/api/og/tournaments/$': {
+      id: '/api/og/tournaments/$'
+      path: '/api/og/tournaments/$'
+      fullPath: '/api/og/tournaments/$'
+      preLoaderRoute: typeof ApiOgTournamentsSplatRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/app/_authed/$clubSlug/': {
@@ -1742,10 +1741,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthCallbackRoute: AuthCallbackRoute,
   ApiClubsSlugLogoRoute: ApiClubsSlugLogoRoute,
   ApiOgClubsSlugRoute: ApiOgClubsSlugRoute,
-  ApiOgGamesGameIdDotpngRoute: ApiOgGamesGameIdDotpngRoute,
-  ApiOgPlayersSlugDotpngRoute: ApiOgPlayersSlugDotpngRoute,
-  ApiOgTournamentsTournamentIdDotpngRoute:
-    ApiOgTournamentsTournamentIdDotpngRoute,
+  ApiOgGamesSplatRoute: ApiOgGamesSplatRoute,
+  ApiOgPlayersSplatRoute: ApiOgPlayersSplatRoute,
+  ApiOgTournamentsSplatRoute: ApiOgTournamentsSplatRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

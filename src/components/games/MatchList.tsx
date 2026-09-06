@@ -1,6 +1,7 @@
 import type { BracketIndex } from "@/libs/algorithms/bracket";
 import type { BracketSide, TournamentMatch } from "@/types";
 import { useT } from "@/i18n";
+import GameLinkOverlay from "@/components/games/GameLinkOverlay";
 import PlayerLink from "@/components/players/PlayerLink";
 
 /** Reading order of a tournament: groups, then the main draw, then the repêchage
@@ -25,6 +26,7 @@ export default function MatchList({
   matches,
   nameOf,
   slugOf,
+  clubSlug,
   index,
   raceFor,
   onRecord,
@@ -34,6 +36,9 @@ export default function MatchList({
   /** The person's slug for each id, for the public side's /players/:slug
    *  links. Omitted inside a club, where PlayerLink uses the club route. */
   slugOf?: (id: number) => string | undefined;
+  /** The club's slug on the public side, so a played fixture can link to the
+   *  result's own page. Omitted inside a club, where the route carries it. */
+  clubSlug?: string;
   index: BracketIndex;
   /** How many racks a fixture runs to; shown once per stage. */
   raceFor: (match: TournamentMatch) => number;
@@ -91,6 +96,7 @@ export default function MatchList({
                   index={index}
                   nameOf={nameOf}
                   slugOf={slugOf}
+                  clubSlug={clubSlug}
                   onRecord={onRecord(match) ?? undefined}
                 />
               </li>
@@ -117,12 +123,14 @@ function Row({
   index,
   nameOf,
   slugOf,
+  clubSlug,
   onRecord,
 }: {
   match: TournamentMatch;
   index: BracketIndex;
   nameOf: (id: number) => string;
   slugOf?: (id: number) => string | undefined;
+  clubSlug?: string;
   onRecord?: () => void;
 }) {
   const { t } = useT();
@@ -156,7 +164,7 @@ function Row({
         playerId={playerId}
         playerSlug={slugOf?.(playerId)}
         onClick={(e) => e.stopPropagation()}
-        className="transition-colors duration-150 hover:text-strike"
+        className="relative transition-colors duration-150 hover:text-strike"
       >
         {name(playerId, slot)}
       </PlayerLink>
@@ -224,11 +232,28 @@ function Row({
   // outline.
   // A row holding a highlighted name lights up — that is the whole mechanism
   // behind tapping a player: no state reaches here, only the marked child.
-  const surface = `has-[[data-highlight]]:bg-strike-tint ${
+  const surface = `relative has-[[data-highlight]]:bg-strike-tint ${
     played ? "bg-felt-raised" : "bg-felt"
   }`;
 
-  if (!onRecord) return <div className={surface}>{content}</div>;
+  // A fixture that has been played is a result, and a result has a page: the
+  // whole row is the way to it. Only the names opt out — here they follow a
+  // player through the draw instead.
+  const link = match.game_id ? (
+    <GameLinkOverlay gameId={match.game_id} clubSlug={clubSlug} />
+  ) : null;
+
+  if (!onRecord)
+    return (
+      <div
+        className={`${surface} ${
+          link ? "transition-colors duration-150 hover:bg-rail" : ""
+        }`}
+      >
+        {link}
+        {content}
+      </div>
+    );
 
   // Not a native <button> because a player's name inside it is a link to
   // their page, and interactive content cannot nest inside a <button>.

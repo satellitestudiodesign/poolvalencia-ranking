@@ -31,6 +31,7 @@ export default function BracketView({
   matches,
   nameOf,
   slugOf,
+  clubSlug,
   index,
   raceFor,
   onRecord,
@@ -40,6 +41,9 @@ export default function BracketView({
   /** The person's slug for each id, for the public side's /players/:slug
    *  links. Omitted inside a club, where PlayerLink uses the club route. */
   slugOf?: (id: number) => string | undefined;
+  /** The club's slug on the public side, so a played fixture can link to the
+   *  result's own page. Omitted inside a club, where the route carries it. */
+  clubSlug?: string;
   index: BracketIndex;
   /** How many racks a fixture runs to; shown once per round. */
   raceFor: (match: TournamentMatch) => number;
@@ -112,6 +116,7 @@ export default function BracketView({
                               match={match}
                               nameOf={nameOf}
                               slugOf={slugOf}
+                              clubSlug={clubSlug}
                               index={index}
                               onRecord={onRecord(match) ?? undefined}
                             />

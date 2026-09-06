@@ -224,6 +224,7 @@ export default function PublicTournamentPage() {
                   matches={matches}
                   nameOf={nameOf}
                   slugOf={slugOf}
+                  clubSlug={tournament.club?.slug}
                   index={index}
                   raceFor={raceOf}
                   onRecord={() => null}
@@ -233,6 +234,7 @@ export default function PublicTournamentPage() {
                   matches={matches}
                   nameOf={nameOf}
                   slugOf={slugOf}
+                  clubSlug={tournament.club?.slug}
                   index={index}
                   raceFor={raceOf}
                   onRecord={() => null}
